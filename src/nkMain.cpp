@@ -179,7 +179,7 @@ int main( int argc, char** argv )
         return EXIT_FAILURE;
     }
 
-    recDb::SetDb( new wxSQLite3Database(), recDb::ENV_CmdLine );
+    recDb::SetDb( new wxSQLite3Database() );
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
 
     wxString famIdxFile;

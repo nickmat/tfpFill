@@ -61,6 +61,7 @@
     <library>calendar</library>
     <library>wxsqlite3</library>
     <library>rec</library>
+    <library>reccl</library>
 
     <wx-lib>core</wx-lib>
     <wx-lib>base</wx-lib>
