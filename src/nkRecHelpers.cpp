@@ -409,7 +409,6 @@ void AddPersonaToEvent( idt eventID, idt perID, idt roleID, long datePt )
     ep.f_per_seq = recEvent::GetLastPersonaSeqNumber( eventID ) + 1;
     ep.Save();
 }
-//idt CreateOccupation( idt perID, const wxString occ, int* pASeq, idt refID, int* pseq )
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq )
 {
     if( occ.empty() ) return 0;
@@ -433,7 +432,6 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int
     return event.f_id;
 }
 
-//idt CreateCondition( idt perID, const wxString cond, int* pASeq, idt refID, int* pseq )
 idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq )
 {
     if( con.empty() ) return 0;

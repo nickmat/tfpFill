@@ -69,9 +69,7 @@ extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, i
 extern idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateResidenceEvent( idt dateID, idt placeID, idt refID, int* pseq );
 extern void AddPersonaToEvent( idt eventID, idt perID, idt roleID, long datePt );
-//extern idt CreateOccupation( idt perID, const wxString occ, int* pASeq, idt refID, int* pseq );
 extern idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq );
-//extern idt CreateCondition( idt perID, const wxString cond, int* pASeq, idt refID, int* pseq );
 extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );
 extern void rSetPersonaSex( idt perID, Sex sex );

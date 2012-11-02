@@ -49,7 +49,7 @@
 
 #define VERSION   "0.0.1"
 #define PROGNAME  "tfpNick"
-#define PROGDATE  "2011"
+#define PROGDATE  "2011 - 2012"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
@@ -255,10 +255,10 @@ bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr )
 {
     long dir, fnum, id; 
     // Old Individual href format = "../ps01/ps01_016.htm"
-    // TFP format is "I16"
-    if( href.Mid( 0, 1 ) == "I" ) { 
+    // TFP format is "tfp:I16"
+    if( href.Mid( 0, 5 ) == "tfp:I" ) { 
         // Already converted.
-        if( !href.Mid( 1 ).ToLong( &id ) ) return false;
+        if( !href.Mid( 5 ).ToLong( &id ) ) return false;
     } else {
         if( href.Mid( 0, 5 ) != "../ps" ) return false;
         if( !href.Mid( 5, 2 ).ToLong( &dir ) ) return false;
@@ -268,7 +268,7 @@ bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr )
     }
     *indID = id;
     if( indIdStr ) {
-        *indIdStr = wxString::Format( "I%ld", id );
+        *indIdStr = wxString::Format( "tfp:I%ld", id );
     }
     return true;
 }
