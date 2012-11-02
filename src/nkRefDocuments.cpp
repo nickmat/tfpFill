@@ -168,7 +168,7 @@ void Process1841CensusIndividuals(
     wxXmlNode* row, idt refID, idt eventID, idt dateID, const wxString& address, int* pseq )
 {
     wxXmlNode* data;
-    idt indID, ageID, bplaceID = 0; //, occID;
+    idt indID, ageID, bplaceID = 0, occID;
     bool samecounty;
     wxString samecountyStr;
     wxString name;
@@ -188,17 +188,15 @@ void Process1841CensusIndividuals(
             ep.f_per_id = perID;
             ep.f_per_seq = ++personaSeq;
             ep.Save();
-            int attrSeq = 0;
-
             data = xmlGetNext( data, "td" );  // Age column.
             ageID = CreateDateFromAge( data, dateID, refID, pseq );
             data = xmlGetNext( data, "td" );  // In Sex column.
             data = xmlGetNext( data, "td" );  // Occupation column.
             occ = xmlGetAllContent( data );
-//            occID = CreateOccupation( perID, occ, &attrSeq, refID, pseq );
-//            if( occID ) {
-//                xmlCreateLink( data, "^"+recAttribute::GetIdStr( occID ) );
-//            }
+            occID = CreateOccupation( occ, refID, perID, dateID, pseq );
+            if( occID ) {
+                xmlCreateLink( data, "tfp:"+recEvent::GetIdStr( occID ) );
+            }
             data = xmlGetNext( data, "td" );  // Same county column.
             samecountyStr = xmlGetAllContent( data );
             samecountyStr.LowerCase();
@@ -300,7 +298,7 @@ void ProcessCensusIndividuals(
                 occ = xmlGetAllContent( span );
                 attID = CreateOccupation( occ, refID, perID, dateID, pseq );
                 if( attID ) {
-                    xmlCreateLink( span, "tfpi:"+recEvent::GetIdStr( attID ) );
+                    xmlCreateLink( span, "tfp:"+recEvent::GetIdStr( attID ) );
                 }
             }
         }
