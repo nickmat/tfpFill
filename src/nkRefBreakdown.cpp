@@ -173,7 +173,7 @@ void AddEventRole( idt evID, idt perID, const wxString& line, idt dateID )
     ep.f_event_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
-    ep.f_per_seq = recEvent::GetLastPersonaSeqNumber( evID ) + 1;
+    ep.f_per_seq = recEvent::GetLastPerSeqNumber( evID ) + 1;
     ep.Save();
 }
 #if 0

@@ -406,7 +406,7 @@ void AddPersonaToEvent( idt eventID, idt perID, idt roleID, long datePt )
     ep.f_event_id = eventID;
     ep.f_per_id = perID;
     ep.f_role_id = roleID;
-    ep.f_per_seq = recEvent::GetLastPersonaSeqNumber( eventID ) + 1;
+    ep.f_per_seq = recEvent::GetLastPerSeqNumber( eventID ) + 1;
     ep.Save();
 }
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq )
