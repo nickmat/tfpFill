@@ -229,7 +229,7 @@ int main( int argc, char** argv )
         recGedParse ged( gedcomFile );
         ged.SetUseXref( true );
         wxPrintf( "." );
-        if( ged.Import() ) {
+        if( ged.Import( recGED_IMPORT_NO_POST_OPS ) ) {
             wxPrintf( " Done.\nUpdating links " );
             recDb::Begin();
             UpdateFamilyLinks( famIdxFile );
