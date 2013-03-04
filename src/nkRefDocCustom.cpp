@@ -47,18 +47,72 @@
 
 typedef std::vector< wxFileName > Filenames;
 
+enum RecordType {
+    RT_UNKNOWN,
+    RT_Date,
+    RT_Place,
+    RT_Individual,
+    RT_MAX
+};
+
+wxString MakeIntoLink( const wxString& text, RecordType type, idt id )
+{
+    // Remove any end spaces to tail
+    wxString tail;
+    wxString::const_iterator it = text.end();
+    while( it != text.begin() && *--it == ' ' ) {
+        tail << ' ';
+    }
+    if( it == text.begin() ) {
+        return text; // It's all spaces
+    }
+    wxString body = text.substr( 0, text.size() - tail.size() );
+
+    // Construct result
+    wxString result;
+    it = body.begin();
+    while( it != body.end() && *it == ' ' ) {
+        result << *it++; // Skip spaces 
+    }
+    result << "<a href='";
+    switch( type )
+    {
+    case RT_UNKNOWN:
+        return text;
+    case RT_Date:
+        result << "tfpi:D";
+        break;
+    case RT_Place:
+        result << "tfpi:P";
+        break;
+    case RT_Individual:
+        result << "tfp:I";
+        break;
+    default:
+        wxASSERT( false ); // Shouldn't be here
+        return text;
+    }
+    result << id << "'>";
+    while( it != body.end() ) {
+        result << *it++;
+    }
+    result << "</a>" << tail;
+
+    return result;
+}
+
 wxString GetDateStrQuarterPlus( long year, long quarter )
 {
     switch( quarter ) 
     {
     case 1:
-        return wxString::Format( "1 Dec %ld - 31 Mar %ld", year-1, year );
+        return wxString::Format( "1 Dec %ld ~ 31 Mar %ld", year-1, year );
     case 2:
-        return wxString::Format( "1 Mar %ld - 30 Jun %ld", year, year );
+        return wxString::Format( "1 Mar %ld ~ 30 Jun %ld", year, year );
     case 3:
-        return wxString::Format( "1 Jun %ld - 30 Sep %ld", year, year );
+        return wxString::Format( "1 Jun %ld ~ 30 Sep %ld", year, year );
     case 4:
-        return wxString::Format( "1 Sep %ld - 31 Dec %ld", year, year );
+        return wxString::Format( "1 Sep %ld ~ 31 Dec %ld", year, year );
     }
     return wxEmptyString;
 }
@@ -68,13 +122,13 @@ wxString GetDateStrQuarter( long year, long quarter )
     switch( quarter ) 
     {
     case 1:
-        return wxString::Format( "1 Jan %ld - 31 Mar %ld", year, year );
+        return wxString::Format( "1 Jan %ld ~ 31 Mar %ld", year, year );
     case 2:
-        return wxString::Format( "1 Apr %ld - 30 Jun %ld", year, year );
+        return wxString::Format( "1 Apr %ld ~ 30 Jun %ld", year, year );
     case 3:
-        return wxString::Format( "1 Jul %ld - 30 Sep %ld", year, year );
+        return wxString::Format( "1 Jul %ld ~ 30 Sep %ld", year, year );
     case 4:
-        return wxString::Format( "1 Oct %ld - 31 Dec %ld", year, year );
+        return wxString::Format( "1 Oct %ld ~ 31 Dec %ld", year, year );
     }
     return wxEmptyString;
 }
@@ -93,7 +147,7 @@ wxString GetDateStrMonth( long year, long month )
 wxString GetDateStrMonthPlus( long year, long month )
 {
     wxASSERT( month > 0 && month <= 12 );
-    return wxString::Format( "%s %ld - %s %ld",
+    return wxString::Format( "%s %ld ~ %s %ld",
         MonthsStr[month-1], (month == 1) ? year-1 : year, 
         MonthsStr[month], year
     );
@@ -150,7 +204,7 @@ void Process161File( wxFileName& fn )
     file.Open();
     long year, quarter, month;
     long rDatePt, bDatePt;
-    wxString str, heading;
+    wxString str, placeStr, heading;
     idt indID, perID, rDateID, bDateID, placeID, perMotherID, rEveID, bEveID;
     int block = -1;
     recReference ref;
@@ -159,7 +213,7 @@ void Process161File( wxFileName& fn )
         if( line.IsEmpty() ) continue;
         wxChar ch = line[0];
         if( ch == '[' ) break;
-        if( str == ' ' || str == '<' ) continue;
+        if( ch == ' ' || ch == '<' ) continue;
         if( line.Mid( 0, 4 ) == "Year" ) {
             heading = "<pre><b>\n" + line + "\n\n";
             block++;
@@ -187,6 +241,7 @@ void Process161File( wxFileName& fn )
         }
         rDateID = CreateDate( str, ref.f_id, &seq );
 
+        placeStr = line.Mid( 43, c161[block].distL );
         str = line.Mid( 43, c161[block].distL ).Trim() + " (RD)";
         placeID = CreatePlace( str, ref.f_id, &seq );
 
@@ -213,7 +268,14 @@ void Process161File( wxFileName& fn )
         }
 
         ref.f_title << year << " GRO Birth Index for " << recPersona::GetNameStr( perID );
-        ref.f_statement << "<!-- HTML -->\n" << heading << line << "\n\n</pre>\n";
+        ref.f_statement 
+            << "<!-- HTML -->\n" << heading 
+            << MakeIntoLink( line.substr( 0, 8 ), RT_Date, rDateID )
+            << MakeIntoLink( line.substr( 8, 12 ), RT_Individual, indID )
+            << line.substr( 20, 23 ) // Forename
+            << MakeIntoLink( placeStr, RT_Place, placeID )
+            << line.substr( 43+c161[block].distL ) << "\n\n</pre>\n"
+        ;
         ref.Save();
     }
 }
@@ -239,7 +301,7 @@ void Process162File( wxFileName& fn )
         if( line.IsEmpty() ) continue;
         wxChar ch = line[0];
         if( ch == '[' ) break;
-        if( str == ' ' || str == '<' ) continue;
+        if( ch == ' ' || ch == '<' ) continue;
         if( line.Mid( 0, 4 ) == "Year" ) {
             heading = "<pre><b>\n" + line + "\n\n";
             block++;
@@ -315,7 +377,7 @@ void Process163File( wxFileName& fn )
         if( line.IsEmpty() ) continue;
         wxChar ch = line[0];
         if( ch == '[' ) break;
-        if( str == ' ' || str == '<' ) continue;
+        if( ch == ' ' || ch == '<' ) continue;
         if( line.Mid( 0, 4 ) == "Year" ) {
             heading = "<pre><b>\n" + line + "\n\n";
             block++;

@@ -1,12 +1,12 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Name:        nkMain.cpp
- * Project:     tfpnick: Private utility to create Matthews TFP database
+ * Name:        tfp_fill/src/nkMain.cpp
+ * Project:     tfp_fill: Private utility to create Matthews TFP database
  * Purpose:     Application main and supporting functions
  * Author:      Nick Matthews
- * Modified by:
+ * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
  * RCS-ID:      $Id$
- * Copyright:   Copyright (c) 2011, Nick Matthews.
+ * Copyright:   Copyright (c) 2011-2013, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -47,9 +47,9 @@
 #include "nkMain.h"
 #include "xml2.h"
 
-#define VERSION   "0.0.1"
-#define PROGNAME  "tfpNick"
-#define PROGDATE  "2011 - 2012"
+#define VERSION   "0.0.2"
+#define PROGNAME  "tfp_fill"
+#define PROGDATE  "2011 - 2013"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
@@ -179,7 +179,7 @@ int main( int argc, char** argv )
         return EXIT_FAILURE;
     }
 
-    recDb::SetDb( new wxSQLite3Database() );
+    recInitialize();
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
 
     wxString famIdxFile;
@@ -247,7 +247,7 @@ int main( int argc, char** argv )
     } else {
         wxPrintf( " Failed.\n" );
     }
-    delete recDb::GetDb();
+    recUninitialize();
     return ret;
 }
 

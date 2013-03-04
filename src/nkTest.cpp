@@ -45,6 +45,7 @@
 
 int DoTest( const wxString& fname )
 {
+#if 0
     recDb::SetDb( new wxSQLite3Database() );
     if( !recDb::OpenDb( fname ) ) {
         wxPrintf( "Unable to open [%s]\n", fname );
@@ -68,6 +69,7 @@ int DoTest( const wxString& fname )
         last = ref;
     }
     wxPrintf( "Missing ref = %d\n", cnt );
+#endif
     return EXIT_SUCCESS;
 }
 
