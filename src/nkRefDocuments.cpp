@@ -175,7 +175,7 @@ void Process1841CensusIndividuals(
     wxString county = GetLastWord( address );
     wxString occ;
     recEventPersona ep(0);
-    ep.f_event_id = eventID;
+    ep.f_event_rec_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -232,7 +232,7 @@ void ProcessCensusIndividuals(
     Sex sex;
     wxString occ;
     recEventPersona ep(0);
-    ep.f_event_id = eventID;
+    ep.f_event_rec_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -454,7 +454,7 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
     idt motherIndID = GetIndividualAnchor( cell2, &name );
     idt motherPerID = 0;
     if( !name.IsEmpty() ) {
-        idt nameID =  recPersona::GetDefaultNameID( fatherPerID );
+        idt nameID =  recPersona::GetNameID( fatherPerID );
         nameID = GetWifeName( name, nameID, refID, &refSeq );
         motherPerID = CreateRefPersona( SEX_Female, refID, motherIndID, nameID );
     }

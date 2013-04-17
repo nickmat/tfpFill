@@ -108,9 +108,9 @@ idt CreatePersona( idt refID, const wxString& line )
     if( !indNum.IsEmpty() ) { 
         indID = recGetID( indNum.Mid( 1 ) );
         if( indID ) {
-            recLinkPersona lp(0);
-            lp.f_ind_per_id = recIndividual::GetPersona( indID );
-            lp.f_ref_per_id = pa.f_id;
+            recIndividualPersona lp(0);
+            lp.f_ind_id = indID;
+            lp.f_per_id = pa.f_id;
             lp.f_conf = 0.999;
             lp.Save();
         }
@@ -170,10 +170,10 @@ void AddEventRole( idt evID, idt perID, const wxString& line, idt dateID )
     }
 
     recEventPersona ep(0);
-    ep.f_event_id = evID;
+    ep.f_event_rec_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
-    ep.f_per_seq = recEvent::GetLastPerSeqNumber( evID ) + 1;
+    ep.f_per_seq = recEventRecord::GetLastPerSeqNumber( evID ) + 1;
     ep.Save();
 }
 #if 0
@@ -267,7 +267,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, evID, pseq );
     
     recEventPersona ep(0);
-    ep.f_event_id = evID;
+    ep.f_event_rec_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
     ep.f_per_seq = 1;

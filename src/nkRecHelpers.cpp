@@ -155,9 +155,9 @@ idt AddPersona( idt refID, idt indID, const wxString& nameStr, int* pseq )
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
 
     if( ind.f_id ) {
-        recLinkPersona lp(0);
-        lp.f_ind_per_id = ind.f_per_id;
-        lp.f_ref_per_id = per.f_id;
+        recIndividualPersona lp(0);
+        lp.f_ind_id = ind.f_id;
+        lp.f_per_id = per.f_id;
         lp.f_conf = 0.999;
         lp.Save();
     }
@@ -176,11 +176,10 @@ idt CreateRefPersona( Sex sex, idt refID, idt indID, idt nameID )
     name.f_sequence = 1;
     name.Save();
 
-    idt indPerID = recIndividual::GetPersona( indID );
-    if( indPerID ) {
-        recLinkPersona lp(0);
-        lp.f_ind_per_id = indPerID;
-        lp.f_ref_per_id = per.f_id;
+    if( indID ) {
+        recIndividualPersona lp(0);
+        lp.f_ind_id = indID;
+        lp.f_per_id = per.f_id;
         lp.f_conf = 0.999;
         lp.Save();
     }
@@ -201,11 +200,10 @@ idt CreateRefPersona( Sex sex, idt refID, idt indID, const wxString& nameStr, in
     name.AddNameParts( nameStr );
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
 
-    idt indPerID = recIndividual::GetPersona( indID );
-    if( indPerID ) {
-        recLinkPersona lp(0);
-        lp.f_ind_per_id = indPerID;
-        lp.f_ref_per_id = per.f_id;
+    if( indID ) {
+        recIndividualPersona lp(0);
+        lp.f_ind_id = indID;
+        lp.f_per_id = per.f_id;
         lp.f_conf = 0.999;
         lp.Save();
     }
@@ -215,8 +213,8 @@ idt CreateRefPersona( Sex sex, idt refID, idt indID, const wxString& nameStr, in
 void AddName( idt refID, idt perID, const wxString& nameStr, int* pseq )
 {
     recName name(0);
-    name.f_per_id = perID;
-    name.f_sequence = recPersona::CountNames( perID ) + 1;
+    name.FSetPerID( perID );
+    name.SetNextSequence();
     name.Save();
     name.AddNameParts( nameStr );
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
@@ -250,7 +248,7 @@ idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Birth_Born;
     ep.f_per_seq = 1;
@@ -271,7 +269,7 @@ idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pse
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_RegBirth_Born;
     ep.f_per_seq = 1;
@@ -292,7 +290,7 @@ idt CreateChrisEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Baptism_Baptised;
     ep.f_per_seq = 1;
@@ -313,7 +311,7 @@ idt CreateMarriageEvent( idt perID, idt dateID, idt placeID, long role, idt refI
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = role;
     ep.f_per_seq = 1;
@@ -334,7 +332,7 @@ idt CreateDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Death_Died;
     ep.f_per_seq = 1;
@@ -355,7 +353,7 @@ idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pse
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_RegDeath_Died;
     ep.f_per_seq = 1;
@@ -376,7 +374,7 @@ idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq 
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Burial_Deceased;
     ep.f_per_seq = 1;
@@ -403,10 +401,10 @@ void AddPersonaToEvent( idt eventID, idt perID, idt roleID, long datePt )
 {
     if( eventID == 0 || perID == 0 ) return;
     recEventPersona ep(0);
-    ep.f_event_id = eventID;
+    ep.f_event_rec_id = eventID;
     ep.f_per_id = perID;
     ep.f_role_id = roleID;
-    ep.f_per_seq = recEvent::GetLastPerSeqNumber( eventID ) + 1;
+    ep.f_per_seq = recEventRecord::GetLastPerSeqNumber( eventID ) + 1;
     ep.Save();
 }
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq )
@@ -423,7 +421,7 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = occID;
     ep.f_per_seq = 1;
@@ -447,7 +445,7 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int*
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_id = event.f_id;
+    ep.f_event_rec_id = event.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = conID;
     ep.f_per_seq = 1;
@@ -482,8 +480,8 @@ void rSetPersonaSex( idt perID, Sex sex )
 void rAddNameToPersona( idt perID, idt nameID )
 {
     recName name(nameID);
-    name.f_per_id = perID;
-    name.f_sequence = recPersona::CountNames( perID ) + 1;
+    name.FSetPerID( perID );
+    name.SetNextSequence();
     name.Save();
 }
 

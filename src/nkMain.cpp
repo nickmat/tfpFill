@@ -68,7 +68,7 @@ bool g_quiet   = false;
 bool UpdateFamilyLink( idt indID, idt famID )
 {
     recIndividual ind(indID);
-    recPersona per(ind.f_per_id);
+//    recPersona per(ind.f_per_id);
     recFamily fam(famID);
 
     if( ind.f_id == 0 ) {
@@ -76,7 +76,7 @@ bool UpdateFamilyLink( idt indID, idt famID )
         return false;
     }
     fam.f_id = famID;
-    if( per.f_sex == SEX_Female ) {
+    if( ind.f_sex == SEX_Female ) {
         fam.f_wife_id = indID;
     } else {
         fam.f_husb_id = indID;
