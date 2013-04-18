@@ -72,7 +72,7 @@ idt CreateMainEvent( idt refID, idt dateID, idt placeID, const wxString& line, i
         type = recEventType::ET_Unstated;
     }
 
-    recEvent ev(0);
+    recEventRecord ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -256,7 +256,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
         placeID = CreatePlace( placeStr, refID, pseq );
     }
 
-    recEvent ev(0);
+    recEventRecord ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -277,6 +277,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
 
 bool InputRefBreakdownFile( const wxString& refFile )
 {
+    return true;
     wxTextFile rf( refFile );
     if( rf.Open() ) {
         idt refID, dateID, placeID, evID, perID;

@@ -68,7 +68,6 @@ bool g_quiet   = false;
 bool UpdateFamilyLink( idt indID, idt famID )
 {
     recIndividual ind(indID);
-//    recPersona per(ind.f_per_id);
     recFamily fam(famID);
 
     if( ind.f_id == 0 ) {
@@ -140,7 +139,7 @@ int main( int argc, char** argv )
         { wxCMD_LINE_SWITCH, "v", "verbose", "be verbose" },
         { wxCMD_LINE_SWITCH, "q", "quiet",   "be quiet" },
         { wxCMD_LINE_SWITCH, "t", "test",    "do test and quit" },
-        { wxCMD_LINE_PARAM,  NULL, NULL, "command file",
+        { wxCMD_LINE_PARAM,  NULL, NULL, "command-file",
             wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY },
         { wxCMD_LINE_NONE }
     };
