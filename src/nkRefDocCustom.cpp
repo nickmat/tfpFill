@@ -229,7 +229,7 @@ void Process161File( wxFileName& fn )
         str = line.Mid( 21, 22 ) + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c161[block].indStart );
         line.Mid( start+2, 4 ).ToLongLong( &indID ); 
-        perID = CreateRefPersona( SEX_Unstated, ref.f_id, indID, str, &seq );
+        perID = CreatePersona( ref.f_id, indID, str, SEX_Unstated, &seq );
         
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
@@ -257,7 +257,7 @@ void Process161File( wxFileName& fn )
 
         if( block > 0 ) {
             str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
-            perMotherID = CreateRefPersona( SEX_Female, ref.f_id, 0, str, &seq );
+            perMotherID = CreatePersona( ref.f_id, 0, str, SEX_Female, &seq );
             rDatePt = recDate::GetDatePoint( rDateID, recDate::DATE_POINT_Beg );
             AddPersonaToEvent( rEveID, perMotherID, 
                 recEventTypeRole::ROLE_RegBirth_Parent, rDatePt );
@@ -317,7 +317,7 @@ void Process162File( wxFileName& fn )
         str = line.Mid( 21, 22 ) + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c162[block].indStart );
         line.Mid( start+2, 4 ).ToLongLong( &indID ); 
-        perID = CreateRefPersona( SEX_Unstated, ref.f_id, indID, str, &seq );
+        perID = CreatePersona( ref.f_id, indID, str, SEX_Unstated, &seq );
         
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
@@ -337,7 +337,7 @@ void Process162File( wxFileName& fn )
 
         if( block > 0 ) {
             str = line.Mid( c162[block].mothB, c162[block].mothL ).Trim();
-            perSpouseID = CreateRefPersona( SEX_Unstated, ref.f_id, 0, str, &seq );
+            perSpouseID = CreatePersona( ref.f_id, 0, str, SEX_Unstated, &seq );
             datePt = recDate::GetDatePoint( dateID );
             role = recEventTypeRole::ROLE_Marriage_Spouse;
             AddPersonaToEvent( eveID, perSpouseID, role, datePt );
@@ -393,7 +393,7 @@ void Process163File( wxFileName& fn )
         str = line.Mid( 21, 22 ) + " " + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c163[block].indStart );
         line.Mid( start+2, 4 ).ToLongLong( &indID ); 
-        perID = CreateRefPersona( SEX_Unstated, ref.f_id, indID, str, &seq );
+        perID = CreatePersona( ref.f_id, indID, str, SEX_Unstated, &seq );
         
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
@@ -717,10 +717,10 @@ void Process1051File( wxFileName& fn )
 
         if( !name1st.IsEmpty() ) {
             name1st << " " << surname;
-            per1stID = CreateRefPersona( sex, ref.f_id, ind1stID, name1st, &seq );
+            per1stID = CreatePersona( ref.f_id, ind1stID, name1st, sex, &seq );
             cEve1stID = CreateChrisEvent( ref.f_id, per1stID, dateID, placeID, &seq );
         }
-        perID = CreateRefPersona( sex, ref.f_id, indID, name, &seq ); 
+        perID = CreatePersona( ref.f_id, indID, name, sex, &seq ); 
         cEveID = CreateChrisEvent( ref.f_id, perID, dateID, placeID, &seq );
 
         if( !bDateStr.IsEmpty() ) {
@@ -731,7 +731,7 @@ void Process1051File( wxFileName& fn )
 
         if( parentNameID ) {
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, parentNameID, &seq );
-            perParentID = CreateRefPersona( SEX_Unstated, ref.f_id, parentID, parentNameID );
+            perParentID = CreatePersona( ref.f_id, parentID, parentNameID, SEX_Unstated );
             AddPersonaToEvent( cEveID, perParentID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
         }
         if( perParentID ) {
@@ -740,7 +740,7 @@ void Process1051File( wxFileName& fn )
 
         if( fatherNameID ) {
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, fatherNameID, &seq );
-            perFatherID = CreateRefPersona( SEX_Male, ref.f_id, fatherID, fatherNameID );
+            perFatherID = CreatePersona( ref.f_id, fatherID, fatherNameID, SEX_Male );
             if( per1stID ) {
                 AddPersonaToEvent( cEve1stID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
             }
@@ -757,11 +757,11 @@ void Process1051File( wxFileName& fn )
             if( motherMaidenID ) {
                 recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, motherMaidenID, &seq );
                 recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, motherNameID, &seq );
-                perMotherID = CreateRefPersona( SEX_Female, ref.f_id, motherID, motherMaidenID );
+                perMotherID = CreatePersona( ref.f_id, motherID, motherMaidenID, SEX_Female );
                 rAddNameToPersona( perMotherID, motherNameID );
             } else {
                 recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, motherNameID, &seq );
-                perMotherID = CreateRefPersona( SEX_Female, ref.f_id, motherID, motherNameID );
+                perMotherID = CreatePersona( ref.f_id, motherID, motherNameID, SEX_Female );
             }
             if( per1stID ) {
                 AddPersonaToEvent( cEve1stID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );

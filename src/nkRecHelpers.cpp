@@ -140,31 +140,7 @@ idt CreateName( const wxString& surname, const wxString& givens )
     return name.f_id;
 }
 
-idt AddPersona( idt refID, idt indID, const wxString& nameStr, int* pseq )
-{
-    recIndividual ind(indID);
-    recPersona per(0);
-    per.f_ref_id = refID;
-    per.Save();
-
-    recName name(0);
-    name.f_per_id = per.f_id;
-    name.f_sequence = 1;
-    name.Save();
-    name.AddNameParts( nameStr );
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
-
-    if( ind.f_id ) {
-        recIndividualPersona lp(0);
-        lp.f_ind_id = ind.f_id;
-        lp.f_per_id = per.f_id;
-        lp.f_conf = 0.999;
-        lp.Save();
-    }
-    return per.f_id;
-}
-
-idt CreateRefPersona( Sex sex, idt refID, idt indID, idt nameID )
+idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )
 {
     recPersona per(0);
     per.f_sex = sex;
@@ -186,28 +162,28 @@ idt CreateRefPersona( Sex sex, idt refID, idt indID, idt nameID )
     return per.f_id;
 }
 
-idt CreateRefPersona( Sex sex, idt refID, idt indID, const wxString& nameStr, int* pseq )
+idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq )
 {
     recPersona per(0);
-    per.f_sex = sex;
-    per.f_ref_id = refID;
+    per.FSetSex( sex );
+    per.FSetRefID( refID );
     per.Save();
 
     recName name(0);
-    name.f_per_id = per.f_id;
-    name.f_sequence = 1;
+    name.FSetPerID( per.FGetID() );
+    name.FSetSequence( 1 );
     name.Save();
     name.AddNameParts( nameStr );
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
 
     if( recIndividual::Exists( indID ) ) {
         recIndividualPersona lp(0);
-        lp.f_ind_id = indID;
-        lp.f_per_id = per.f_id;
-        lp.f_conf = 0.999;
+        lp.FSetIndID( indID );
+        lp.FSetPerID( per.FGetID() );
+        lp.FSetConf( 0.999 );
         lp.Save();
     }
-    return per.f_id;
+    return per.FGetID();
 }
 
 void AddName( idt refID, idt perID, const wxString& nameStr, int* pseq )
@@ -231,7 +207,7 @@ void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names )
         if( IndPerMap.count(indID) > 0 ) {
             AddName( refID, IndPerMap[indID], names[i], &seq );
         } else {
-            IndPerMap[indID] = AddPersona( refID, indID, names[i], &seq );
+            IndPerMap[indID] = CreatePersona( refID, indID, names[i], SEX_Unstated, &seq );
         }
     }
 }
