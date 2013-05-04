@@ -65,7 +65,7 @@ idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq )
     recDate date;
     date.SetDefaults();
     date.f_rel_id = rel.f_id;
-    rel.CalculateDate( date );
+    rel.CalculateDate( &date );
     date.Save();
     if( refID ) {
         recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Date, date.f_id, pseq );

@@ -205,20 +205,28 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
     wxString typeStr = tk.GetNextToken();
     wxString dateStr = tk.GetNextToken();
     wxString placeStr = tk.GetNextToken();
+    wxString roleStr = tk.GetNextToken();
 
     recEventType::EType type = recEventType::ET_Unstated;
     wxString title;
     recDate::DatePoint datePt = recDate::DATE_POINT_Mid;
-    recEventTypeRole::Role role = recEventTypeRole::ROLE_Unstated;
+    idt role = recEventTypeRole::ROLE_Unstated;
     if( typeStr == "Birth" ) {
         type = recEventType::ET_Birth;
         title = wxString::Format( "Birth of %s", recPersona::GetNameStr( perID ) );
         datePt = recDate::DATE_POINT_Beg;
         role = recEventTypeRole::ROLE_Birth_Born;
-    } 
+    }
+    if( typeStr == "Occ" ) {
+        type = recEventType::ET_Occupation;
+        title = wxString::Format( "Occupation of %s", recPersona::GetNameStr( perID ) );
+        role = recEventTypeRole::FindOrCreate( roleStr, type );
+    }
     
     idt dateID = 0;
-    if( !dateStr.IsEmpty() ) {
+    if( dateStr == "#" ) {
+        dateID = baseID;
+    } else if( !dateStr.IsEmpty() ) {
         CalendarUnit unit = CALENDAR_UNIT_Unstated;
         recDate date(0);
         date.SetDefaults();
@@ -249,6 +257,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
         }
         date.Save();
         dateID = date.f_id;
+        recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Date, dateID, pseq );
     }
 
     idt placeID = 0;
@@ -277,7 +286,6 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
 
 bool InputRefBreakdownFile( const wxString& refFile )
 {
-    return true;
     wxTextFile rf( refFile );
     if( rf.Open() ) {
         idt refID, dateID, placeID, evID, perID;
@@ -303,8 +311,6 @@ bool InputRefBreakdownFile( const wxString& refFile )
                 CreateName( refID, perID, line.Mid( 2 ), &seq );
             } else if( line.Left( 3 ) == "EP:" ) {
                 AddEventRole( evID, perID, line.Mid( 3 ), dateID );
-//            } else if( line.Left( 2 ) == "A:" ) {
-//                CreateAttr( refID, perID, line.Mid( 2 ), dateID, &seq );
             }
         }
     }
