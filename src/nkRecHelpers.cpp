@@ -412,22 +412,25 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int*
 
     idt conID = recEventTypeRole::FindOrCreate( con, recEventType::ET_Condition );
 
-    recEventRecord event(0);
-    event.f_title = "Condition of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Condition;
-    event.f_date1_id = dateID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventRecord er(0);
+    er.FSetTypeID( recEventType::ET_Condition );
+    er.FSetDate1ID( dateID );
+//    er.FSetDate2ID( dateID );
+    er.UpdateDatePoint();
+    er.SetAutoTitle( recPersona::GetNameStr( perID ) );
+    er.Save();
+    idt erID = er.FGetID();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, erID, pseq );
 
     recEventPersona ep(0);
-    ep.f_event_rec_id = event.f_id;
+    ep.f_event_rec_id = erID;
     ep.f_per_id = perID;
     ep.f_role_id = conID;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+    LinkOrCreateEventFromEventRecord( erID );
+    return erID;
 }
 
 idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq )
@@ -459,6 +462,57 @@ void rAddNameToPersona( idt perID, idt nameID )
     name.FSetPerID( perID );
     name.SetNextSequence();
     name.Save();
+}
+
+idt LinkOrCreateEventFromEventRecord( idt erID )
+{
+    idt eID = 0;
+    recEventRecord er(erID);
+    recEventType et( er.FGetTypeID() );
+    recIdVec eIDs = er.FindMatchingEvents( recEventRecord::recEVENT_Link_IndPer );
+    if( et.FGetGrp() == recEventType::ETYPE_Grp_Birth ||
+        et.FGetGrp() == recEventType::ETYPE_Grp_Death ||
+        et.FGetGrp() == recEventType::ETYPE_Grp_Personal
+    ) {
+        if( eIDs.empty() ) {
+            return CreateEventFromEventRecord( erID );
+        }
+        double conf = 0.999 / eIDs.size();
+        for( size_t i = 0 ; i < eIDs.size() ; i++ ) {
+            recEventEventRecord::Create( eIDs[i], erID, conf );
+            recEvent::SetDatePeriodToInclude( eIDs[i], er.FGetDate1ID() );
+        }
+        eID = eIDs[0];
+    } else {
+        wxASSERT( false ); // TODO:                           <<=============<<<<<<
+    }
+    return eID;
+}
+
+idt CreateEventFromEventRecord( idt erID )
+{
+    recEventRecord er(erID);
+    recEvent e(0);
+    e.FSetTitle( er.FGetTitle() );
+    e.FSetTypeID( er.FGetTypeID() );
+    e.FSetDate1ID( recDate::Create( er.FGetDate1ID() ) );
+    e.FSetDate2ID( recDate::Create( er.FGetDate2ID() ) );
+    e.FSetPlaceID( er.FGetPlaceID() );
+    e.FSetNote( er.FGetNote() );
+    e.FSetDatePt( er.FGetDatePt() );
+    e.Save();
+    idt eID = e.FGetID();
+    recEventEventRecord::Create( eID, erID );
+
+    recEventPersonaVec eps = er.GetEventPersonas();
+    for( size_t i = 0 ; i < eps.size() ; i++ ) {
+        recIdVec indIDs = recPersona::GetIndividualIDs( eps[i].FGetPerID() );
+        idt roleID = eps[i].FGetRoleID();
+        for( size_t j = 0 ; j < indIDs.size() ; j++ ) {
+            recIndividualEvent::Create( indIDs[j], eID, roleID );
+        }
+    }
+    return eID;
 }
 
 Sex GetSexFromStr( const wxString& str )

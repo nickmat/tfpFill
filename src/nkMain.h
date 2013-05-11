@@ -73,6 +73,8 @@ extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateI
 extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );
 extern void rSetPersonaSex( idt perID, Sex sex );
 extern void rAddNameToPersona( idt perID, idt nameID );
+extern idt LinkOrCreateEventFromEventRecord( idt erID );
+extern idt CreateEventFromEventRecord( idt erID );
 
 extern Sex GetSexFromStr( const wxString& str );
 extern wxString GetConditionStr( Sex sex, const wxString& cond );

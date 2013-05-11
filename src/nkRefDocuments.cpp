@@ -276,7 +276,7 @@ void ProcessCensusIndividuals(
                 headPerId = perID;
             } else {
                 rsID = CreateRelationship( perID, relStr, headPerId, refID, pseq );
-                xmlCreateLink( data, "tfpi:"+recRelationship::GetIdStr( rsID ) );
+                xmlCreateLink( relNode, "tfpi:"+recRelationship::GetIdStr( rsID ) );
             }
 
             data = xmlGetNext( data, "td" );  // In Birthplace column.
@@ -319,6 +319,7 @@ void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
     wxString part;
     wxXmlNode* row;
     wxXmlNode* data;
+    wxXmlNode* addrNode;
     wxXmlNode* table = xmlGetFirstChild( refNode, "table" );
     // Get address, 1901 files have been structured differently from others
     // census. We will make the address by combining the "Address", "Civil
@@ -329,6 +330,8 @@ void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
     data = xmlGetNext( data, "td" );
     data = xmlGetNext( data, "td" );
     address = xmlGetAllContent( data ); // "Address"
+    addrNode = data;
+    wxString addrStr = address;
     row = xmlGetNext( row, "tr" );
     data = xmlGetFirstChild( row, "td" );
     data = xmlGetNext( data, "td" );
@@ -354,6 +357,9 @@ void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
 
     // We are now comitted to creating the records
     idt placeID = CreatePlace( address, refID, &refSeq );
+    if( addrStr.size() ) {
+        xmlCreateLink( addrNode, "tfpi:P"+recGetStr( placeID ) );
+    }
     idt eventID = CreateCensusEvent( title, g_1901CensusDateID, placeID, refID, &refSeq );
     ProcessCensusIndividuals( row, refID, eventID, g_1901CensusDateID, &refSeq );
 }
