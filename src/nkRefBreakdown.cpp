@@ -72,7 +72,7 @@ idt CreateMainEvent( idt refID, idt dateID, idt placeID, const wxString& line, i
         type = recEventType::ET_Unstated;
     }
 
-    recEventRecord ev(0);
+    recEventum ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -169,11 +169,11 @@ void AddEventRole( idt evID, idt perID, const wxString& line, idt dateID )
         role = recEventTypeRole::ROLE_Unstated;
     }
 
-    recEventPersona ep(0);
-    ep.f_event_rec_id = evID;
+    recEventumPersona ep(0);
+    ep.f_eventum_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
-    ep.f_per_seq = recEventRecord::GetLastPerSeqNumber( evID ) + 1;
+    ep.f_per_seq = recEventum::GetLastPerSeqNumber( evID ) + 1;
     ep.Save();
 }
 #if 0
@@ -265,7 +265,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
         placeID = CreatePlace( placeStr, refID, pseq );
     }
 
-    recEventRecord ev(0);
+    recEventum ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -275,8 +275,8 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
     idt evID = ev.f_id;
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, evID, pseq );
     
-    recEventPersona ep(0);
-    ep.f_event_rec_id = evID;
+    recEventumPersona ep(0);
+    ep.f_eventum_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
     ep.f_per_seq = 1;

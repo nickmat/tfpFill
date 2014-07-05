@@ -175,8 +175,8 @@ void Process1841CensusIndividuals(
     wxString county = GetLastWord( address );
     Sex sex;
     wxString occ;
-    recEventPersona ep(0);
-    ep.f_event_rec_id = eventID;
+    recEventumPersona ep(0);
+    ep.f_eventum_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -198,7 +198,7 @@ void Process1841CensusIndividuals(
             occ = xmlGetAllContent( data );
             occID = CreateOccupation( occ, refID, perID, dateID, pseq );
             if( occID ) {
-                xmlCreateLink( data, "tfp:"+recEventRecord::GetIdStr( occID ) );
+                xmlCreateLink( data, "tfp:"+recEventum::GetIdStr( occID ) );
             }
             data = xmlGetNext( data, "td" );  // Same county column.
             samecountyStr = xmlGetAllContent( data );
@@ -235,8 +235,8 @@ void ProcessCensusIndividuals(
     wxString condStr;
     Sex sex;
     wxString occ;
-    recEventPersona ep(0);
-    ep.f_event_rec_id = eventID;
+    recEventumPersona ep(0);
+    ep.f_eventum_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -284,7 +284,7 @@ void ProcessCensusIndividuals(
 
             attID = CreateCondition( GetConditionStr( sex, condStr ), refID, perID, dateID, pseq );
             if( attID ) {
-                xmlCreateLink( condNode, "tfp:"+recEventRecord::GetIdStr( attID ) );
+                xmlCreateLink( condNode, "tfp:"+recEventum::GetIdStr( attID ) );
             }
 
             bplaceID = 0;
@@ -304,7 +304,7 @@ void ProcessCensusIndividuals(
                 occ = xmlGetAllContent( span );
                 attID = CreateOccupation( occ, refID, perID, dateID, pseq );
                 if( attID ) {
-                    xmlCreateLink( span, "tfp:"+recEventRecord::GetIdStr( attID ) );
+                    xmlCreateLink( span, "tfp:"+recEventum::GetIdStr( attID ) );
                 }
             }
         }
@@ -482,7 +482,7 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         datePt = recDate::GetDatePoint( dateID, recDate::DATE_POINT_Beg );
         AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Birth_Mother, datePt );
         xmlCreateLink( birthDateCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventRecord::GetIdStr( eventID ) );
+        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventum::GetIdStr( eventID ) );
     }
     if( !chrisStr.IsEmpty() ) {
         wxString chrisDateStr, chrisPlaceStr;
@@ -501,21 +501,21 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
         wxXmlNode* link = xmlCreateLink( chrisCell, 0, pos, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( link->GetNext(), 2, -1, "tfpi:"+recPlace::GetIdStr( placeID ) );
-        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventRecord::GetIdStr( eventID ) );
+        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventum::GetIdStr( eventID ) );
     }
     if( !deathStr.IsEmpty() ) {
         dateID = CreateDate( deathStr, refID, &refSeq );
         placeID = 0;
         eventID = CreateDeathEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( deathCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventRecord::GetIdStr( eventID ) );
+        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventum::GetIdStr( eventID ) );
     }
     if( !burialStr.IsEmpty() ) {
         dateID = CreateDate( burialStr, refID, &refSeq );
         placeID = 0;
         eventID = CreateBurialEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( burialCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventRecord::GetIdStr( eventID ) );
+        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventum::GetIdStr( eventID ) );
     }
     CreateRelationship( motherPerID, "Mother", perID, refID, &refSeq );
     CreateRelationship( fatherPerID, "Father", perID, refID, &refSeq );
