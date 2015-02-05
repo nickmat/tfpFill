@@ -47,20 +47,20 @@
 #include "nkMain.h"
 #include "xml2.h"
 
-#define VERSION   "0.0.2"
-#define PROGNAME  "tfp_fill"
-#define PROGDATE  "2011 - 2013"
+#define VERSION   "0.0.3"
+#define PROGNAME  "fill for TFP"
+#define PROGDATE  "2011 - 2015"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
-
-#ifdef NDEBUG
-const wxString g_title = PROGNAME " - Version " VERSION "\n"
-                         "Copyright (c) " PROGDATE " Nick Matthews\n\n";
+#ifdef _DEBUG
+#define VERSION_CONFIG   " debug"
 #else
-const wxString g_title = PROGNAME " - Version " VERSION " Debug\n"
-                         "Copyright (c) " PROGDATE " Nick Matthews\n\n";
+#define VERSION_CONFIG   ""
 #endif
+
+const wxString g_title = PROGNAME " - Version " VERSION VERSION_CONFIG "\n"
+                         "Copyright (c) " PROGDATE " Nick Matthews\n\n";
 
 bool g_verbose = false;
 bool g_quiet   = false;
