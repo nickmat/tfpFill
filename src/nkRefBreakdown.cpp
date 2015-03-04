@@ -41,7 +41,9 @@
 
 #include <rec/recDb.h>
 
+#include "fiRefMarkup.h"
 #include "nkMain.h"
+#include "xml2.h"
 
 idt CreateDate( idt refID, const wxString& line, int* pseq )
 {
@@ -317,5 +319,22 @@ bool InputRefBreakdownFile( const wxString& refFile )
     return true;
 }
 
+//###########################################################################
+//##===================[ Process RD files with markup ]====================##
+//###########################################################################
+
+void ProcessMarkupRef( idt refID, wxXmlNode* root )
+{
+    const wxString savepoint = recDb::GetSavepointStr();
+    recDb::Savepoint( savepoint );
+
+    fiRefMarkup markup( refID, root );
+    bool ok = markup.create_records();
+    if( ok ) {
+        recDb::ReleaseSavepoint( savepoint );
+    } else {
+        recDb::Rollback( savepoint );
+    }
+}
 
 // End of nkRefBreakdown.cpp file 

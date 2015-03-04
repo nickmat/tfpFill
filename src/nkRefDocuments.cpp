@@ -44,7 +44,6 @@
 #include "nkMain.h"
 #include "xml2.h"
 
-typedef std::vector< wxFileName > Filenames;
 
 idt g_1841CensusDateID;
 idt g_1851CensusDateID;
@@ -585,12 +584,18 @@ void ProcessRefFile( const wxString path, const wxString name, Filenames& custom
         return;
     }
 
-    wxXmlNode* child = doc.GetRoot()->GetChildren();
+    wxXmlNode* root = doc.GetRoot();
+    wxXmlNode* child = root->GetChildren();
     wxXmlNode* refNode = NULL;
     wxString idAttr;
     wxString h1Class;
     while( child ) {
         if (child->GetName() == "body") {
+            idAttr = child->GetAttribute( "id" );
+            if( idAttr.size() ) {
+                ProcessMarkupRef( refID, root );
+                return;
+            }
             child = child->GetChildren();
             continue;
         } else if (child->GetName() == "h1") {
@@ -630,7 +635,9 @@ bool InputRefFiles( const wxString& refFolder )
 
         bool cont = dir.GetFirst( &filename, filespec, wxDIR_FILES );
         while( cont ) {
+if( filename != "rd00393.htm" ) {
             ProcessRefFile( dirname, filename, customs );
+}
             cont = dir.GetNext( &filename );
         }
     }

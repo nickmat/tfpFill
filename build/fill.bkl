@@ -36,6 +36,7 @@
     <runtime-libs>dynamic</runtime-libs>
 
     <sources>$(LOCAL_NICK)/dummy.cpp</sources>
+    <sources>$(LOCAL_NICK)/fiRefMarkup.cpp</sources>
     <sources>$(LOCAL_NICK)/nkMain.cpp</sources>
     <sources>$(LOCAL_NICK)/nkRecHelpers.cpp</sources>
     <sources>$(LOCAL_NICK)/nkRefBreakdown.cpp</sources>
@@ -45,6 +46,7 @@
     <sources>$(LOCAL_NICK)/nkXmlHelpers.cpp</sources>
     <sources>$(LOCAL_NICK)/xml2.cpp</sources>
 
+    <headers>$(LOCAL_NICK)/fiRefMarkup.h</headers>
     <headers>$(LOCAL_NICK)/nkMain.h</headers>
     <headers>$(LOCAL_NICK)/xml2.h</headers>
 

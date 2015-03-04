@@ -212,6 +212,7 @@ int main( int argc, char** argv )
         }
     }
     cFile.Close();
+    wxPrintf( "Current: %s\n", wxGetCwd() );
     wxPrintf( "Command File: [%s]\n", inFName.GetFullPath() );
     wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
     wxPrintf( "Family index file: [%s]\n", famIdxFile );
@@ -228,7 +229,8 @@ int main( int argc, char** argv )
         recGedParse ged( gedcomFile );
         ged.SetUseXref( true );
         wxPrintf( "." );
-        if( ged.Import( recGED_IMPORT_NO_POST_OPS ) ) {
+        unsigned flags = recGED_IMPORT_NO_POST_OPS | recGED_IMPORT_NO_SOUR_REC;
+        if( ged.Import( flags ) ) {
             wxPrintf( " Done.\nUpdating links " );
             recDb::Begin();
             UpdateFamilyLinks( famIdxFile );
@@ -285,5 +287,6 @@ wxString GetLastWord( const wxString& address )
 {
     return address.AfterLast( ' ' );
 }
+
 
 // End of nkMain.cpp file 

@@ -34,6 +34,9 @@
 #include <rec/recDatabase.h>
 #include <rec/recDate.h>
 
+class wxXmlNode;
+typedef std::vector< wxFileName > Filenames;
+
 /* nkMain.cpp */
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
@@ -41,8 +44,10 @@ extern wxString GetLastWord( const wxString& address );
 
 /* nkRefBreakdown.cpp */
 extern bool InputRefBreakdownFile( const wxString& refFile );
+extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
 /* nkRefDocuments.cpp */
+extern void ProcessRefFile( const wxString path, const wxString name, Filenames& customs );
 extern bool InputRefFiles( const wxString& refFolder );
 
 /* nkRefDocCustom.cpp */

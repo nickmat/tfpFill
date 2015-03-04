@@ -45,6 +45,18 @@
 
 int DoTest( const wxString& fname )
 {
+    recInitialize();
+
+    if( !recDb::OpenDb( fname ) ) {
+        wxPrintf( "Unable to open [%s]\n", fname );
+        return EXIT_FAILURE;
+    }
+    Filenames fns;
+    ProcessRefFile( "C:\\Users\\Nick\\Projects\\Family\\Web\\rd01", "rd00393.htm", fns );
+
+    recUninitialize();
+
+
 #if 0
     recDb::SetDb( new wxSQLite3Database() );
     if( !recDb::OpenDb( fname ) ) {
