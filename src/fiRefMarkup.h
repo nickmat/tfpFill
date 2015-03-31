@@ -47,6 +47,8 @@ private:
     StringVec parse_statements( const wxString& str ) const;
     wxString read_text( const wxString& input, wxString* tail ) const;
     Sex read_sex( const wxString& input, wxString* tail ) const;
+    idt read_int( const wxString& input, wxString* tail ) const;
+    bool read_bool( const wxString& input, wxString* tail ) const;
     idt find_id( const wxString& recStr ) const;
     void markup_node( wxXmlNode* refNode );
     wxString convert_local_id( const wxString& localStr ) const;
@@ -59,6 +61,7 @@ private:
     idt create_eventa_rec( const wxString& str );
     idt create_eventa_per_rec( const wxString& str );
     idt create_event_eventa_rec( const wxString& str );
+    idt create_role_rec( const wxString& str );
     void create_reference_rec();
 
     wxXmlNode*  m_root;
@@ -69,6 +72,7 @@ private:
     idt  m_cur_date;
     idt  m_cur_place;
     idt  m_cur_eventa;
+    idt  m_cur_role;
 };
 
 #endif // FILL_FIREFMARKUP_H

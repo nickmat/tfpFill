@@ -174,8 +174,8 @@ void Process1841CensusIndividuals(
     wxString county = GetLastWord( address );
     Sex sex;
     wxString occ;
-    recEventumPersona ep(0);
-    ep.f_eventum_id = eventID;
+    recEventaPersona ep(0);
+    ep.f_eventa_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -197,7 +197,7 @@ void Process1841CensusIndividuals(
             occ = xmlGetAllContent( data );
             occID = CreateOccupation( occ, refID, perID, dateID, pseq );
             if( occID ) {
-                xmlCreateLink( data, "tfp:"+recEventum::GetIdStr( occID ) );
+                xmlCreateLink( data, "tfp:"+recEventa::GetIdStr( occID ) );
             }
             data = xmlGetNext( data, "td" );  // Same county column.
             samecountyStr = xmlGetAllContent( data );
@@ -234,8 +234,8 @@ void ProcessCensusIndividuals(
     wxString condStr;
     Sex sex;
     wxString occ;
-    recEventumPersona ep(0);
-    ep.f_eventum_id = eventID;
+    recEventaPersona ep(0);
+    ep.f_eventa_id = eventID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
     while( row ) {
@@ -283,7 +283,7 @@ void ProcessCensusIndividuals(
 
             attID = CreateCondition( GetConditionStr( sex, condStr ), refID, perID, dateID, pseq );
             if( attID ) {
-                xmlCreateLink( condNode, "tfp:"+recEventum::GetIdStr( attID ) );
+                xmlCreateLink( condNode, "tfp:"+recEventa::GetIdStr( attID ) );
             }
 
             bplaceID = 0;
@@ -303,7 +303,7 @@ void ProcessCensusIndividuals(
                 occ = xmlGetAllContent( span );
                 attID = CreateOccupation( occ, refID, perID, dateID, pseq );
                 if( attID ) {
-                    xmlCreateLink( span, "tfp:"+recEventum::GetIdStr( attID ) );
+                    xmlCreateLink( span, "tfp:"+recEventa::GetIdStr( attID ) );
                 }
             }
         }
@@ -481,7 +481,7 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         datePt = recDate::GetDatePoint( dateID, recDate::DATE_POINT_Beg );
         AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Birth_Mother, datePt );
         xmlCreateLink( birthDateCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventum::GetIdStr( eventID ) );
+        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eventID ) );
     }
     if( !chrisStr.IsEmpty() ) {
         wxString chrisDateStr, chrisPlaceStr;
@@ -500,21 +500,21 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
         wxXmlNode* link = xmlCreateLink( chrisCell, 0, pos, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( link->GetNext(), 2, -1, "tfpi:"+recPlace::GetIdStr( placeID ) );
-        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventum::GetIdStr( eventID ) );
+        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventa::GetIdStr( eventID ) );
     }
     if( !deathStr.IsEmpty() ) {
         dateID = CreateDate( deathStr, refID, &refSeq );
         placeID = 0;
         eventID = CreateDeathEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( deathCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventum::GetIdStr( eventID ) );
+        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eventID ) );
     }
     if( !burialStr.IsEmpty() ) {
         dateID = CreateDate( burialStr, refID, &refSeq );
         placeID = 0;
         eventID = CreateBurialEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( burialCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventum::GetIdStr( eventID ) );
+        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventa::GetIdStr( eventID ) );
     }
     CreateRelationship( motherPerID, "Mother", perID, refID, &refSeq );
     CreateRelationship( fatherPerID, "Father", perID, refID, &refSeq );
@@ -619,6 +619,34 @@ void ProcessRefFile( const wxString path, const wxString name, Filenames& custom
     }
 }
 
+void ProcessRefFile2( const wxString path, const wxString name, Filenames& customs )
+{
+    wxFileName fn( path, name );
+    idt refID;
+    name.Mid( 2 ).ToLongLong( &refID );
+    wxString title;
+
+    wxXmlDocument doc;
+    if( !doc.Load( fn.GetFullPath(), "UTF-8", wxXMLDOC_KEEP_WHITESPACE_NODES ) ) {
+        wxPrintf( "\nRef ("ID") filename: [%s]\n\n", refID, fn.GetFullPath() );
+        return;
+    }
+
+    wxXmlNode* root = doc.GetRoot();
+    wxXmlNode* child = root->GetChildren();
+    wxString idAttr;
+    while( child ) {
+        if (child->GetName() == "body") {
+            idAttr = child->GetAttribute( "id" );
+            if( idAttr.size() ) {
+                ProcessMarkupRef( refID, root );
+                break;
+            }
+        }
+        child = child->GetNext();
+    }
+}
+
 bool InputRefFiles( const wxString& refFolder )
 {
     CreateSourceGlobals();
@@ -635,7 +663,9 @@ bool InputRefFiles( const wxString& refFolder )
 
         bool cont = dir.GetFirst( &filename, filespec, wxDIR_FILES );
         while( cont ) {
-if( filename != "rd00393.htm" ) {
+if( filename == "rd00393.htm" ) {
+            ProcessRefFile2( dirname, filename, customs );
+} else {
             ProcessRefFile( dirname, filename, customs );
 }
             cont = dir.GetNext( &filename );

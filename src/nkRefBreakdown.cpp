@@ -74,7 +74,7 @@ idt CreateMainEvent( idt refID, idt dateID, idt placeID, const wxString& line, i
         type = recEventType::ET_Unstated;
     }
 
-    recEventum ev(0);
+    recEventa ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -107,7 +107,7 @@ idt CreatePersona( idt refID, const wxString& line )
     pa.Save();
 
     idt indID;
-    if( !indNum.IsEmpty() ) { 
+    if( !indNum.IsEmpty() ) {
         indID = recGetID( indNum.Mid( 1 ) );
         if( indID ) {
             recIndividualPersona lp(0);
@@ -171,11 +171,11 @@ void AddEventRole( idt evID, idt perID, const wxString& line, idt dateID )
         role = recEventTypeRole::ROLE_Unstated;
     }
 
-    recEventumPersona ep(0);
-    ep.f_eventum_id = evID;
+    recEventaPersona ep(0);
+    ep.f_eventa_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
-    ep.f_per_seq = recEventum::GetLastPerSeqNumber( evID ) + 1;
+    ep.f_per_seq = recEventa::GetLastPerSeqNumber( evID ) + 1;
     ep.Save();
 }
 #if 0
@@ -224,7 +224,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
         title = wxString::Format( "Occupation of %s", recPersona::GetNameStr( perID ) );
         role = recEventTypeRole::FindOrCreate( roleStr, type );
     }
-    
+
     idt dateID = 0;
     if( dateStr == "#" ) {
         dateID = baseID;
@@ -267,7 +267,7 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
         placeID = CreatePlace( placeStr, refID, pseq );
     }
 
-    recEventum ev(0);
+    recEventa ev(0);
     ev.f_title = title;
     ev.f_type_id = type;
     ev.f_date1_id = dateID;
@@ -276,9 +276,9 @@ void CreateSubEvent( idt refID, idt perID, idt baseID, const wxString& line, int
     ev.Save();
     idt evID = ev.f_id;
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, evID, pseq );
-    
-    recEventumPersona ep(0);
-    ep.f_eventum_id = evID;
+
+    recEventaPersona ep(0);
+    ep.f_eventa_id = evID;
     ep.f_per_id = perID;
     ep.f_role_id = role;
     ep.f_per_seq = 1;
@@ -337,4 +337,4 @@ void ProcessMarkupRef( idt refID, wxXmlNode* root )
     }
 }
 
-// End of nkRefBreakdown.cpp file 
+// End of nkRefBreakdown.cpp file

@@ -52,7 +52,7 @@ bool Date_IsOverlap( idt date1ID, idt date2ID )
 
 void Event_CreateRolesFromEventa( idt eID, idt eaID )
 {
-    recEventumPersonaVec epas = recEventum::GetEventumPersonas( eaID );
+    recEventaPersonaVec epas = recEventa::GetEventaPersonas( eaID );
     for( size_t i = 0 ; i < epas.size() ; i++ ) {
         recIdVec indIDs = recPersona::GetIndividualIDs( epas[i].FGetPerID() );
         for( size_t j = 0 ; j < indIDs.size() ; j++ ) {
@@ -70,8 +70,9 @@ void Event_CreateRolesFromEventa( idt eID, idt eaID )
     }
 }
 
-idt Event_CreateFromEventa( const recEventum& ea )
+idt Event_CreateFromEventa( const recEventa& ea )
 {
+    idt eaID = ea.FGetID();
     recEvent e(0);
     e.FSetTitle( ea.FGetTitle() );
     e.FSetTypeID( ea.FGetTypeID() );
@@ -83,22 +84,29 @@ idt Event_CreateFromEventa( const recEventum& ea )
     e.Save();
     idt eID = e.FGetID();
 
-    idt eaID = ea.FGetID();
+    recET_GRP grp = recEventType::GetGroup( e.FGetTypeID() );
+    if( grp == recET_GRP_Personal ) {
+        Event_CreateRolesFromEventa( eID, eaID );
+        e.FSetID( 0 );
+        e.FSetHigherID( eID );
+        e.Save();
+        eID = e.FGetID();
+    }
+    Event_CreateRolesFromEventa( eID, eaID );
 
-    recEventEventum eer(0);
+    recEventEventa eer(0);
     eer.FSetEventID( eID );
-    eer.FSetEventumID( eaID );
+    eer.FSetEventaID( eaID );
     eer.FSetConf( 0.999 );
     eer.Save();
 
-    Event_CreateRolesFromEventa( eID, eaID );
 
     return eID;
 }
 
-// Compares Eventa and Event to determine if they refer 
+// Compares Eventa and Event to determine if they refer
 // to the same event.
-bool Eventa_IsEventMatch( const recEventum& ea, idt eventID )
+bool Eventa_IsEventMatch( const recEventa& ea, idt eventID )
 {
     recEvent eve(eventID);
     if( eve.FGetID() == 0 ) {
@@ -130,11 +138,11 @@ bool Eventa_IsEventMatch( const recEventum& ea, idt eventID )
 }
 
 
-// We may move this to the recEventa (or recEventum) class
+// We may move this to the recEventa class.
 // If the persona linked to the eventa have Individual links
 // then check to see if a corresponding Event exists,
 // if not, create one. Then create the EventEventa link.
-idt Eventa_CreateEventLink( const recEventum& ea )
+idt Eventa_CreateEventLink( const recEventa& ea )
 {
     recCheckIdVec ces = ea.FindCheckedMatchingEvents();
     if( ces.size() ) {
@@ -144,7 +152,7 @@ idt Eventa_CreateEventLink( const recEventum& ea )
             }
             idt eID = ces[i].GetSecondID();
             if( Eventa_IsEventMatch( ea, eID ) ) {
-                recEventEventum::Create( eID, ea.FGetID() );
+                recEventEventa::Create( eID, ea.FGetID() );
                 Event_CreateRolesFromEventa( eID, ea.FGetID() );
             } else {
                 Event_CreateFromEventa( ea );
@@ -154,6 +162,47 @@ idt Eventa_CreateEventLink( const recEventum& ea )
         return Event_CreateFromEventa( ea );
     }
     return 0;
+}
+
+idt Name_CreateDuplicateName( idt nameID, idt indID, idt perID ) 
+{
+    recName name( nameID );
+    name.FSetID( 0 );
+    name.FSetIndID( indID );
+    name.FSetPerID( perID );
+    name.Save();
+
+    recNamePartVec parts = recName::GetParts( nameID );
+    for( size_t i = 0 ; i < parts.size() ; i++ ) {
+        recNamePart part( parts[i].FGetID() );
+        part.FSetID( 0 );
+        part.FSetNameID( name.FGetID() );
+        part.Save();
+    }
+    return name.FGetID();
+}
+
+idt Individual_CreateFromPersona( idt perID, idt indID )
+{
+    recPersona per(perID);
+    if( per.FGetID() == 0 ) {
+        return 0;
+    }
+    idt nameID = per.GetNameID( perID );
+    nameID = Name_CreateDuplicateName( nameID, indID, 0 );
+    if( nameID == 0 ) {
+        return 0;
+    }
+
+    recIndividual ind(0);
+    ind.FSetID( indID );
+    ind.FSetSex( per.FGetSex() );
+    // We don't copy the note field since this would
+    // normally refer to the Reference Document.
+    ind.FSetName( recName::GetNameStr( nameID ) );
+    ind.FSetSurname( recName::GetSurname( nameID ) );
+    ind.Save();
+    return ind.FGetID();
 }
 
 bool fiRefMarkup::create_records()
@@ -214,6 +263,8 @@ bool fiRefMarkup::create_records()
             }
         } else if( localStr.compare( 0, 2, "Ea" ) == 0 ) {
             recordID = create_eventa_rec( recordStr );
+        } else if( localStr.compare( 0, 2, "Ro" ) == 0 ) {
+            recordID = create_role_rec( recordStr );
         } else if( localStr.compare( 0, 2, "EP" ) == 0 ) {
             recordID = create_eventa_per_rec( recordStr );
         } else if( localStr.compare( 0, 2, "EE" ) == 0 ) {
@@ -224,13 +275,14 @@ bool fiRefMarkup::create_records()
             m_localIDs[localStr] = recordID;
         }
     }
+    recIndividual::CreateMissingFamilies();
     create_reference_rec();
 
     return true;
 }
 
 // Splits into statements that end with the ';' character.
-// Removes line comments that start with "//". Leaves the new line.  
+// Removes line comments that start with "//". Leaves the new line.
 // Passes over " quoted sections.
 StringVec fiRefMarkup::parse_statements( const wxString& str ) const
 {
@@ -334,6 +386,51 @@ Sex fiRefMarkup::read_sex( const wxString& input, wxString* tail ) const
     return sex;
 }
 
+idt fiRefMarkup::read_int( const wxString& input, wxString* tail ) const
+{
+    wxString str = input; // Work on copy because input may equal tail.
+    wxString num;
+    wxString::const_iterator it = str.begin();
+    while( it != str.end() ) {
+        if( *it == ',' ) {
+            it++;
+            break;
+        }
+        num += *it++;
+    }
+    if( tail ) {
+        tail->clear();
+        while( it != str.end() ) {
+            *tail += *it++;
+        }
+    }
+    return recGetID( num );
+}
+
+bool fiRefMarkup::read_bool( const wxString& input, wxString* tail ) const
+{
+    wxString str = input; // Work on copy because input may equal tail.
+    wxString b;
+    wxString::const_iterator it = str.begin();
+    while( it != str.end() ) {
+        if( *it == ',' ) {
+            it++;
+            break;
+        }
+        b += *it++;
+    }
+    if( tail ) {
+        tail->clear();
+        while( it != str.end() ) {
+            *tail += *it++;
+        }
+    }
+    if( b.size() && b != "0" && b.Lower().compare( "true" ) != 0 ) {
+        return true;
+    }
+    return false;
+}
+
 idt fiRefMarkup::find_id( const wxString& recStr ) const
 {
     if( recStr.size() <= 3 ) {
@@ -418,7 +515,6 @@ wxString fiRefMarkup::convert_local_id( const wxString& localStr ) const
     }
     wxString url;
     if( prefix == "Ea" ) {
-        prefix = "Em"; // TEMP: Until Eventum changed to Eventa.
         url = "tfp:";
     } else {
         url = "tfpi:";
@@ -476,6 +572,13 @@ idt fiRefMarkup::create_name_rec( idt perID, const wxString& str )
 
 idt fiRefMarkup::create_ind_per_rec( idt indID, idt perID )
 {
+    if( indID <= 0 ) {
+        return 0;
+    }
+    if( !recIndividual::Exists( indID ) ) {
+        // Create Individual from from Persona
+        indID = Individual_CreateFromPersona( perID, indID );
+    }
     recIndividualPersona ip(0);
     ip.FSetIndID( indID );
     ip.FSetPerID( perID );
@@ -514,13 +617,13 @@ idt fiRefMarkup::create_eventa_rec( const wxString& str )
         etypeStr = head.substr( 4 );
         etypeID = recGetID( etypeStr );
     }
-    wxString perStr = read_text( tail, NULL ); 
+    wxString perStr = read_text( tail, NULL );
     if( perStr.compare( 0, 4, "L-Pa" ) == 0 ) {
         perID = find_id( perStr );
         perName = recName::GetDefaultNameStr( 0, perID );
     }
 
-    recEventum ea(0);
+    recEventa ea(0);
     ea.FSetTypeID( etypeID );
     ea.FSetDate1ID( m_cur_date );
     ea.FSetPlaceID( m_cur_place );
@@ -529,7 +632,7 @@ idt fiRefMarkup::create_eventa_rec( const wxString& str )
     ea.Save();
     m_cur_eventa = ea.FGetID();
 
-    recReferenceEntity::Create( 
+    recReferenceEntity::Create(
         m_referenceID, recReferenceEntity::TYPE_Event, m_cur_eventa );
 
     create_eventa_per_rec( tail );
@@ -547,13 +650,15 @@ idt fiRefMarkup::create_eventa_per_rec( const wxString& str )
     }
     if( roleStr.compare( 0, 4, "D-Ro" ) == 0 ) {
         roleID = recGetID( roleStr.substr( 4 ) );
+    } else {
+        roleID = m_cur_role;
     }
 
-    recEventumPersona ep(0);
-    ep.FSetEventumID( m_cur_eventa );
+    recEventaPersona ep(0);
+    ep.FSetEventaID( m_cur_eventa );
     ep.FSetPerID( perID );
     ep.FSetRoleID( roleID );
-    ep.FSetPerSeq( recEventum::GetLastPerSeqNumber( m_cur_eventa ) + 1 );
+    ep.FSetPerSeq( recEventa::GetLastPerSeqNumber( m_cur_eventa ) + 1 );
     ep.Save();
 
     return ep.FGetID();
@@ -562,8 +667,30 @@ idt fiRefMarkup::create_eventa_per_rec( const wxString& str )
 idt fiRefMarkup::create_event_eventa_rec( const wxString& str )
 {
     // Ignore str for now.
-    recEventum ea( m_cur_eventa );
+    recEventa ea( m_cur_eventa );
     return Eventa_CreateEventLink( ea );
+}
+
+idt fiRefMarkup::create_role_rec( const wxString& str )
+{
+    wxString tail;
+    wxString head = read_text( str, &tail );
+
+    wxString etypeStr;
+    idt etypeID = 0;
+    if( head.compare( 0, 4, "D-ET" ) == 0 ) {
+        etypeStr = head.substr( 4 );
+        etypeID = recGetID( etypeStr );
+        if( etypeID == 0 ) {
+            return 0;
+        }
+    }
+    recEventTypeRole::Prime prime = recEventTypeRole::Prime( read_int( tail, &tail ) );
+    bool official = read_bool( tail, &tail );
+    wxString value = read_text( tail, NULL );
+
+    m_cur_role = recEventTypeRole::FindOrCreate( value, etypeID, prime, official );
+    return m_cur_role;
 }
 
 void fiRefMarkup::create_reference_rec()
@@ -599,4 +726,4 @@ void fiRefMarkup::create_reference_rec()
     }
 }
 
-// End of fiRefMarkup.cpp file 
+// End of fiRefMarkup.cpp file
