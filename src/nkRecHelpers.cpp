@@ -432,9 +432,10 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int*
     LinkOrCreateEventFromEventRecord( erID );
     return erID;
 }
-
 idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq )
 {
+    return 0;
+#if 0
     if( per1ID == 0 || per2ID == 0 || des.IsEmpty() ) return 0;
     recRelationship rel(0);
     rel.f_per1_id = per1ID;
@@ -445,8 +446,8 @@ idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, 
         recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Relationship, rel.f_id, pseq );
     }
     return rel.f_id;
+#endif
 }
-
 void rSetPersonaSex( idt perID, Sex sex )
 {
     if( perID ) {

@@ -274,8 +274,9 @@ void ProcessCensusIndividuals(
             if( headPerId == 0 || relStr == "Head" ) {
                 headPerId = perID;
             } else {
-                rsID = CreateRelationship( perID, relStr, headPerId, refID, pseq );
-                xmlCreateLink( relNode, "tfpi:"+recRelationship::GetIdStr( rsID ) );
+                rsID = 0;
+//                rsID = CreateRelationship( perID, relStr, headPerId, refID, pseq );
+//                xmlCreateLink( relNode, "tfpi:"+recRelationship::GetIdStr( rsID ) );
             }
 
             data = xmlGetNext( data, "td" );  // In Birthplace column.
