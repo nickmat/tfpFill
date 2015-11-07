@@ -126,6 +126,21 @@ bool UpdateFamilyLinks( const wxString& indFName )
     return true;
 }
 
+void TweakDatabase()
+{
+    recIndividual ind;
+
+    ind.ReadID( 3 ); // Chris
+    ind.FSetPrivacy( 20 ); // Set privacy to 20 (Name only)
+    ind.Save();
+    ind.ReadID( 4 ); // Juliette
+    ind.FSetPrivacy( 20 );
+    ind.Save();
+    ind.ReadID( 5 ); // Nick
+    ind.FSetPrivacy( 20 );
+    ind.Save();
+}
+
 /*#*************************************************************************
  **  main
  **  ~~~~
@@ -238,6 +253,10 @@ int main( int argc, char** argv )
             InputRefBreakdownFile( refFile );
             wxPrintf( " Done.\nInput Ref Doc Files " );
             InputRefFiles( refFolder );
+
+            wxPrintf( " Done.\nTweak database " );
+            TweakDatabase();
+
             recDb::Commit();
             wxPrintf( " Done.\nCleaning up Database " );
             ret = EXIT_SUCCESS;
