@@ -138,6 +138,12 @@ void TweakDatabase()
     ind.ReadID( 5 ); // Nick
     ind.FSetPrivacy( 20 );
     ind.Save();
+    ind.ReadID( 21 ); // Ecki
+    ind.FSetPrivacy( 20 );
+    ind.Save();
+    ind.ReadID( 27 ); // Mary
+    ind.FSetPrivacy( 20 );
+    ind.Save();
 }
 
 /*#*************************************************************************
