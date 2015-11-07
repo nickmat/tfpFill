@@ -3,9 +3,8 @@
  * Project:     tfpnick: Private utility to create Matthews TFP database
  * Purpose:     Read and process Reference Document files
  * Author:      Nick Matthews
- * Modified by:
+ * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * RCS-ID:      $Id$
  * Copyright:   Copyright (c) 2011, Nick Matthews.
  * Licence:     GNU GPLv3
  *

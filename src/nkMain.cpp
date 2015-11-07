@@ -5,8 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * RCS-ID:      $Id$
- * Copyright:   Copyright (c) 2011-2013, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2015, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -47,7 +46,7 @@
 #include "nkMain.h"
 #include "xml2.h"
 
-#define VERSION   "0.0.3"
+#define VERSION   "0.1.0"
 #define PROGNAME  "fill for TFP"
 #define PROGDATE  "2011 - 2015"
 
