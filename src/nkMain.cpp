@@ -75,8 +75,15 @@ bool UpdateFamilyLink( idt indID, idt famID )
     }
     fam.f_id = famID;
     if( ind.f_sex == SEX_Female ) {
+        // Don't overwrite a value
+        if( fam.FGetWifeID() != 0 ) {
+            return true;
+        }
         fam.f_wife_id = indID;
     } else {
+        if( fam.FGetHusbID() != 0 ) {
+            return true;
+        }
         fam.f_husb_id = indID;
     }
     fam.Save();
@@ -100,6 +107,7 @@ bool UpdateFamilyLinks( const wxString& indFName )
     iFile.Open( indFName );
     wxString line;
     int state = 0;
+
     for( line = iFile.GetFirstLine() ; !iFile.Eof() ; line = iFile.GetNextLine() ) {
         switch( state )
         {
@@ -250,11 +258,15 @@ int main( int argc, char** argv )
         ged.SetUseXref( true );
         wxPrintf( "." );
         unsigned flags = recGED_IMPORT_NO_POST_OPS | recGED_IMPORT_NO_SOUR_REC;
+//        unsigned flags = recGED_IMPORT_NO_SOUR_REC;
         if( ged.Import( flags ) ) {
             wxPrintf( " Done.\nUpdating links " );
             recDb::Begin();
             UpdateFamilyLinks( famIdxFile );
+            recDb::Commit();
+            ged.DoPostOperations();
             wxPrintf( " Done.\nInput Ref Breakdown File " );
+            recDb::Begin();
             InputRefBreakdownFile( refFile );
             wxPrintf( " Done.\nInput Ref Doc Files " );
             InputRefFiles( refFolder );
