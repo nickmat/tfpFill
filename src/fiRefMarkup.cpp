@@ -74,33 +74,40 @@ void Event_CreateRolesFromEventa( idt eID, idt eaID )
 idt Event_CreateFromEventa( const recEventa& ea )
 {
     idt eaID = ea.FGetID();
+    idt typeID = ea.FGetTypeID();
     recEvent e(0);
     e.FSetTitle( ea.FGetTitle() );
-    e.FSetTypeID( ea.FGetTypeID() );
+    e.FSetTypeID( typeID );
     e.FSetDate1ID( ea.FGetDate1ID() );
     e.FSetDate2ID( ea.FGetDate2ID() );
     e.FSetPlaceID( ea.FGetPlaceID() );
     e.FSetNote( ea.FGetNote() );
     e.FSetDatePt( ea.FGetDatePt() );
-    e.Save();
-    idt eID = e.FGetID();
 
-    recET_GRP grp = recEventType::GetGroup( e.FGetTypeID() );
+    recET_GRP grp = recEventType::GetGroup( typeID );
+    idt eID;
     if( grp == recET_GRP_Personal ) {
+        //idt existingEventID = recIndividual::GetPersonalEvent( ?? we dont have the individual!!!
+
+        e.Save();
+        eID = e.FGetID();
         Event_CreateRolesFromEventa( eID, eaID );
+
         e.FSetID( 0 );
         e.FSetHigherID( eID );
+        e.Save();  // <<======<<<< If personal and existing, don't create another!
+        eID = e.FGetID();
+    } else {
         e.Save();
         eID = e.FGetID();
     }
     Event_CreateRolesFromEventa( eID, eaID );
 
-    recEventEventa eer(0);
-    eer.FSetEventID( eID );
-    eer.FSetEventaID( eaID );
-    eer.FSetConf( 0.999 );
-    eer.Save();
-
+    recEventEventa eea(0);
+    eea.FSetEventID( eID );
+    eea.FSetEventaID( eaID );
+    eea.FSetConf( 0.999 );
+    eea.Save();
 
     return eID;
 }

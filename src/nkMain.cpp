@@ -35,16 +35,19 @@
 #include "wx/wx.h"
 #endif
 
+#include "nkMain.h"
+#include "xml2.h"
+
+#include <rec/recDb.h>
+
 #include <wx/cmdline.h>
 #include <wx/tokenzr.h>
 #include <wx/textfile.h>
 #include <wx/filename.h>
 #include <wx/wfstream.h>
 
-#include <rec/recDb.h>
+#include <ctime>
 
-#include "nkMain.h"
-#include "xml2.h"
 
 #define VERSION   "0.1.0"
 #define PROGNAME  "fill for TFP"
@@ -171,6 +174,7 @@ int main( int argc, char** argv )
             wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY },
         { wxCMD_LINE_NONE }
     };
+    clock_t ticks = clock();
     int ret = EXIT_FAILURE;
 
     wxInitializer initializer;
@@ -210,6 +214,7 @@ int main( int argc, char** argv )
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
 
     wxString famIdxFile;
+    wxString inputDataFile;
     wxString gedcomFile;
     wxString refFolder;
     wxString refFile;
@@ -218,6 +223,10 @@ int main( int argc, char** argv )
     cFile.Open( inFName.GetFullPath() );
     wxString line;
     for( line = cFile.GetFirstLine() ; !cFile.Eof() ; line = cFile.GetNextLine() ) {
+        if( line.compare( 0, 15, "input-data-file" ) == 0 ) {
+            inputDataFile = line.Mid( 16 );
+            continue;
+        }
         if( line.compare( 0, 17, "input-gedcom-file" ) == 0 ) {
             gedcomFile = line.Mid( 18 );
             continue;
@@ -240,18 +249,34 @@ int main( int argc, char** argv )
         }
     }
     cFile.Close();
-    wxPrintf( "Current: %s\n", wxGetCwd() );
+    wxPrintf( "Current folder: %s\n", wxGetCwd() );
     wxPrintf( "Command File: [%s]\n", inFName.GetFullPath() );
+    wxPrintf( "Data file: [%s]\n", inputDataFile );
     wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
     wxPrintf( "Family index file: [%s]\n", famIdxFile );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
     wxPrintf( "Reference file: [%s]\n", refFile );
     wxPrintf( "Output file: [%s]\n", outFile );
 
+    if( !inputDataFile.empty() ) {
+        wxPrintf( "\nExporting GEDCOM " );
+        bool ret = recDb::OpenDb( inputDataFile );
+        if( ret ) {
+            if( !ExportGedcom( gedcomFile ) ) {
+                gedcomFile.clear();
+            }
+            recDb::CloseDb();
+        }
+    }
+    if( gedcomFile.empty() ) {
+        wxPrintf( "Can't create GEDCOM file.\n" );
+        return EXIT_FAILURE;
+    }
+
     if( wxFileExists( outFile ) ) {
         wxRemoveFile( outFile );
     }
-    wxPrintf( "Creating database" );
+    wxPrintf( "\nCreating database" );
     if( recDb::CreateDb( outFile, 0 ) ) {
         wxPrintf( " Done\nImporting GEDCOM " );
         recGedParse ged( gedcomFile );
@@ -259,28 +284,38 @@ int main( int argc, char** argv )
         wxPrintf( "." );
         unsigned flags = recGED_IMPORT_NO_POST_OPS | recGED_IMPORT_NO_SOUR_REC;
 //        unsigned flags = recGED_IMPORT_NO_SOUR_REC;
+//        unsigned flags = recGED_IMPORT_NO_POST_OPS;
         if( ged.Import( flags ) ) {
-            wxPrintf( " Done.\nUpdating links " );
-            recDb::Begin();
-            UpdateFamilyLinks( famIdxFile );
-            recDb::Commit();
+            if( !famIdxFile.empty() ) {
+                wxPrintf( " Done.\nUpdating links " );
+                recDb::Begin();
+                UpdateFamilyLinks( famIdxFile );
+                recDb::Commit();
+            }
+            wxPrintf( " Done.\nComplete GEDCOM input " );
             ged.DoPostOperations();
-            wxPrintf( " Done.\nInput Ref Breakdown File " );
             recDb::Begin();
-            InputRefBreakdownFile( refFile );
-            wxPrintf( " Done.\nInput Ref Doc Files " );
-            InputRefFiles( refFolder );
-
+            if( !refFile.empty() ) {
+                wxPrintf( " Done.\nInput Ref Breakdown File " );
+                InputRefBreakdownFile( refFile );
+            }
+            if( !refFolder.empty() ) {
+                wxPrintf( " Done.\nInput Ref Doc Files " );
+                InputRefFiles( refFolder );
+            }
             wxPrintf( " Done.\nTweak database " );
             TweakDatabase();
 
             recDb::Commit();
-            wxPrintf( " Done.\nCleaning up Database " );
             ret = EXIT_SUCCESS;
+            wxPrintf( " Done.\n" );
         } else {
             wxPrintf( " Failed.\n" );
         }
-        wxPrintf( " Done.\nCreated %s Database file.\n\n", recDb::GetFileName() );
+        wxPrintf( "\nCreated %s Database file.\n", recDb::GetFileName() );
+        int s = (clock() - ticks) / CLOCKS_PER_SEC;
+        int m = (int) s / 60;
+        std::cout << "Timed: " << m << "m " << s - (m*60) << "s\n\n";
     } else {
         wxPrintf( " Failed.\n" );
     }

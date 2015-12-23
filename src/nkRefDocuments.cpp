@@ -394,6 +394,7 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
     wxXmlNode* row2;
     wxXmlNode* cell2;
 
+    // Read in all data
     table = xmlGetFirstChild( refNode, "center" );
     table = xmlGetFirstChild( table, "table" );
     row = xmlGetFirstChild( table, "tr" );
@@ -465,23 +466,25 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
     idt motherIndID = GetIndividualAnchor( cell2, &name );
     idt motherPerID = 0;
     if( !name.IsEmpty() ) {
-        idt nameID =  recPersona::GetNameID( fatherPerID );
-        nameID = GetWifeName( name, nameID, refID, &refSeq );
-        motherPerID = CreatePersona( refID, motherIndID, nameID, SEX_Female );
+//        idt nameID =  recPersona::GetNameID( fatherPerID );
+//        nameID = GetWifeName( name, nameID, refID, &refSeq );
+//        motherPerID = CreatePersona( refID, motherIndID, nameID, SEX_Female );
+        // Assume name is just given name so add '?' for birth surname
+        motherPerID = CreatePersona( refID, motherIndID, name+" ?", SEX_Female, &refSeq );
     }
 
     idt dateID;
     idt placeID;
-    idt eventID;
-    long datePt;
+    idt eaID;
+    idt refDateID = 0;
     if( !birthStr.IsEmpty() ) {
         dateID = CreateDate( birthStr, refID, &refSeq );
         placeID = 0;
-        eventID = CreateBirthEvent( refID, perID, dateID, placeID, &refSeq );
-        datePt = recDate::GetDatePoint( dateID, recDate::DATE_POINT_Beg );
-        AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Birth_Mother, datePt );
+        eaID = CreateBirthEvent( refID, perID, dateID, placeID, &refSeq );
+        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Birth_Mother );
+        LinkOrCreateEventFromEventa( eaID );
         xmlCreateLink( birthDateCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eventID ) );
+        xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
     if( !chrisStr.IsEmpty() ) {
         wxString chrisDateStr, chrisPlaceStr;
@@ -492,33 +495,42 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         } else {
             chrisDateStr = chrisStr;
         }
-        dateID = CreateDate( chrisDateStr, refID, &refSeq );
+        refDateID = dateID = CreateDate( chrisDateStr, refID, &refSeq );
         placeID = CreatePlace( chrisPlaceStr, refID, &refSeq );
-        eventID = CreateChrisEvent( refID, perID, dateID, placeID, &refSeq );
-        datePt = recDate::GetDatePoint( dateID, recDate::DATE_POINT_Beg );
-        AddPersonaToEvent( eventID, fatherPerID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
-        AddPersonaToEvent( eventID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+        eaID = CreateChrisEvent( refID, perID, dateID, placeID, &refSeq );
+        AddPersonaToEvent( eaID, fatherPerID, recEventTypeRole::ROLE_Baptism_Parent );
+        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent );
+        LinkOrCreateEventFromEventa( eaID );
         wxXmlNode* link = xmlCreateLink( chrisCell, 0, pos, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( link->GetNext(), 2, -1, "tfpi:"+recPlace::GetIdStr( placeID ) );
-        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventa::GetIdStr( eventID ) );
+        xmlCreateLink( chrisEventCell, 0, 11, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
     if( !deathStr.IsEmpty() ) {
         dateID = CreateDate( deathStr, refID, &refSeq );
         placeID = 0;
-        eventID = CreateDeathEvent( refID, perID, dateID, placeID, &refSeq );
+        eaID = CreateDeathEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( deathCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eventID ) );
+        xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
     if( !burialStr.IsEmpty() ) {
         dateID = CreateDate( burialStr, refID, &refSeq );
         placeID = 0;
-        eventID = CreateBurialEvent( refID, perID, dateID, placeID, &refSeq );
+        eaID = CreateBurialEvent( refID, perID, dateID, placeID, &refSeq );
         xmlCreateLink( burialCell, "tfpi:"+recDate::GetIdStr( dateID ) );
-        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventa::GetIdStr( eventID ) );
+        xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
-    CreateRelationship( motherPerID, "Mother", perID, refID, &refSeq );
-    CreateRelationship( fatherPerID, "Father", perID, refID, &refSeq );
-    CreateRelationship( fatherPerID, "Husband", motherPerID, refID, &refSeq );
+    if( fatherPerID ) {
+        eaID = CreateFamilyRelEvent( refID, fatherPerID, refDateID, 0, &refSeq );
+        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Family_Wife );
+    } else if( motherPerID ) {
+        eaID = CreateFamilyRelEvent( refID, motherPerID, refDateID, 0, &refSeq );
+    } else {
+        eaID = 0;
+    }
+    if( eaID ) {
+        AddPersonaToEvent( eaID, perID, recEventTypeRole::ROLE_Family_Child );
+        recEventa::CreateFamilyLink( eaID );
+    }
 }
 
 enum IntRefReturn {
@@ -563,9 +575,10 @@ IntRefReturn InterpretRef( idt refID, const wxString& h1Class, const wxString& t
 
     wxString refStr = "<!-- HTML -->\n" + xmlGetSource( refNode );
     recReference ref(0);
-    ref.f_id = refID;
-    ref.f_title = title;
-    ref.f_statement = refStr;
+    ref.FSetID( refID );
+    ref.FSetTitle( title );
+    ref.FSetStatement( refStr );
+    ref.FSetUserRef( "RD"+recGetStr( refID ) );
     ref.Save();
     return INTREF_Done;
 }
@@ -606,6 +619,7 @@ void ProcessRefFile( const wxString path, const wxString name, Filenames& custom
             if( idAttr != "topmenu" && refNode == NULL ) {
                 // We should be looking at reference text
                 refNode = child;
+                break;
             }
         }
         child = child->GetNext();

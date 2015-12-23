@@ -259,10 +259,10 @@ void Process161File( wxFileName& fn )
             perMotherID = CreatePersona( ref.f_id, 0, str, SEX_Female, &seq );
             rDatePt = recDate::GetDatePoint( rDateID, recDate::DATE_POINT_Beg );
             AddPersonaToEvent( rEveID, perMotherID, 
-                recEventTypeRole::ROLE_RegBirth_Parent, rDatePt );
+                recEventTypeRole::ROLE_RegBirth_Parent );
             bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
             AddPersonaToEvent( bEveID, perMotherID, 
-                recEventTypeRole::ROLE_Birth_Mother, bDatePt );
+                recEventTypeRole::ROLE_Birth_Mother );
             CreateRelationship( perMotherID, "Mother", perID, ref.f_id, &seq );
         }
 
@@ -339,7 +339,7 @@ void Process162File( wxFileName& fn )
             perSpouseID = CreatePersona( ref.f_id, 0, str, SEX_Unstated, &seq );
             datePt = recDate::GetDatePoint( dateID );
             role = recEventTypeRole::ROLE_Marriage_Spouse;
-            AddPersonaToEvent( eveID, perSpouseID, role, datePt );
+            AddPersonaToEvent( eveID, perSpouseID, role );
             CreateRelationship( perSpouseID, "Spouse", perID, ref.f_id, &seq );
         }
 
@@ -731,7 +731,7 @@ void Process1051File( wxFileName& fn )
         if( parentNameID ) {
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, parentNameID, &seq );
             perParentID = CreatePersona( ref.f_id, parentID, parentNameID, SEX_Unstated );
-            AddPersonaToEvent( cEveID, perParentID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+            AddPersonaToEvent( cEveID, perParentID, recEventTypeRole::ROLE_Baptism_Parent );
         }
         if( perParentID ) {
             CreateRelationship( perParentID, "Parent", perID, ref.f_id, &seq );
@@ -741,9 +741,9 @@ void Process1051File( wxFileName& fn )
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, fatherNameID, &seq );
             perFatherID = CreatePersona( ref.f_id, fatherID, fatherNameID, SEX_Male );
             if( per1stID ) {
-                AddPersonaToEvent( cEve1stID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+                AddPersonaToEvent( cEve1stID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
             }
-            AddPersonaToEvent( cEveID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+            AddPersonaToEvent( cEveID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
         }
         if( perFatherID ) {
             if( per1stID ) {
@@ -763,9 +763,9 @@ void Process1051File( wxFileName& fn )
                 perMotherID = CreatePersona( ref.f_id, motherID, motherNameID, SEX_Female );
             }
             if( per1stID ) {
-                AddPersonaToEvent( cEve1stID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+                AddPersonaToEvent( cEve1stID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
             }
-            AddPersonaToEvent( cEveID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent, datePt );
+            AddPersonaToEvent( cEveID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
         }
 
         if( perMotherID ) {
@@ -781,7 +781,7 @@ void Process1051File( wxFileName& fn )
         if( bEveID ) {
             bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
             if( perMotherID ) {
-                AddPersonaToEvent( bEveID, perMotherID, recEventTypeRole::ROLE_Birth_Mother, bDatePt );
+                AddPersonaToEvent( bEveID, perMotherID, recEventTypeRole::ROLE_Birth_Mother );
             }
         }
 
@@ -789,18 +789,18 @@ void Process1051File( wxFileName& fn )
             rPlaceID = CreatePlace( residence, ref.f_id, &seq );
             rEveID = CreateResidenceEvent( dateID, rPlaceID, ref.f_id, &seq );
             if( perParentID ) {
-                AddPersonaToEvent( rEveID, perParentID, recEventTypeRole::ROLE_Residence_Family, datePt );
+                AddPersonaToEvent( rEveID, perParentID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( perFatherID ) {
-                AddPersonaToEvent( rEveID, perFatherID, recEventTypeRole::ROLE_Residence_Family, datePt );
+                AddPersonaToEvent( rEveID, perFatherID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( perMotherID ) {
-                AddPersonaToEvent( rEveID, perMotherID, recEventTypeRole::ROLE_Residence_Family, datePt );
+                AddPersonaToEvent( rEveID, perMotherID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( per1stID ) {
-                AddPersonaToEvent( rEveID, per1stID, recEventTypeRole::ROLE_Residence_Family, datePt );
+                AddPersonaToEvent( rEveID, per1stID, recEventTypeRole::ROLE_Residence_Family );
             }
-            AddPersonaToEvent( rEveID, perID, recEventTypeRole::ROLE_Residence_Family, datePt );
+            AddPersonaToEvent( rEveID, perID, recEventTypeRole::ROLE_Residence_Family );
         }
 
 //        if( !occupation.IsEmpty() && perFatherID ) {

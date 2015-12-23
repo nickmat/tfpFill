@@ -54,6 +54,7 @@ extern bool InputRefFiles( const wxString& refFolder );
 extern void ProcessCustomFile( wxFileName& fn );
 
 /* nkRecHelpers.cpp */
+extern bool ExportGedcom( const wxString& path );
 extern idt CreateDate( const wxString& date, idt refID, int* pseq );
 extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq );
 extern idt CreatePlace( const wxString& address, idt refID, int* pseq );
@@ -72,14 +73,16 @@ extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, i
 extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateResidenceEvent( idt dateID, idt placeID, idt refID, int* pseq );
-extern void AddPersonaToEvent( idt eventID, idt perID, idt roleID, long datePt );
+extern idt CreateFamilyRelEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
+extern void AddPersonaToEvent( idt eventID, idt perID, idt roleID );
 extern idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );
 extern void rSetPersonaSex( idt perID, Sex sex );
 extern void rAddNameToPersona( idt perID, idt nameID );
-extern idt LinkOrCreateEventFromEventRecord( idt erID );
-extern idt CreateEventFromEventRecord( idt erID );
+extern idt LinkOrCreateEventFromEventa( idt eaID );
+extern idt CreateEventFromEventa( idt eaID );
+extern bool CreateIndividual( idt indID, idt perID );
 
 extern Sex GetSexFromStr( const wxString& str );
 extern wxString GetConditionStr( Sex sex, const wxString& cond );
