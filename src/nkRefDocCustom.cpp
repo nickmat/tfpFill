@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -224,6 +224,7 @@ void Process161File( wxFileName& fn )
         // Create a new reference from this line
         ref.Clear();
         ref.Save();
+        ref.FSetUserRef( "RD161" );
         seq = 0;
         str = line.Mid( 21, 22 ) + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c161[block].indStart );
@@ -258,10 +259,10 @@ void Process161File( wxFileName& fn )
             str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
             perMotherID = CreatePersona( ref.f_id, 0, str, SEX_Female, &seq );
             rDatePt = recDate::GetDatePoint( rDateID, recDate::DATE_POINT_Beg );
-            AddPersonaToEvent( rEveID, perMotherID, 
+            AddPersonaToEventa( rEveID, perMotherID, 
                 recEventTypeRole::ROLE_RegBirth_Parent );
             bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
-            AddPersonaToEvent( bEveID, perMotherID, 
+            AddPersonaToEventa( bEveID, perMotherID, 
                 recEventTypeRole::ROLE_Birth_Mother );
             CreateRelationship( perMotherID, "Mother", perID, ref.f_id, &seq );
         }
@@ -312,6 +313,7 @@ void Process162File( wxFileName& fn )
         // Create a new reference from this line
         ref.Clear();
         ref.Save();
+        ref.FSetUserRef( "RD162" );
         seq = 0;
         str = line.Mid( 21, 22 ) + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c162[block].indStart );
@@ -339,7 +341,7 @@ void Process162File( wxFileName& fn )
             perSpouseID = CreatePersona( ref.f_id, 0, str, SEX_Unstated, &seq );
             datePt = recDate::GetDatePoint( dateID );
             role = recEventTypeRole::ROLE_Marriage_Spouse;
-            AddPersonaToEvent( eveID, perSpouseID, role );
+            AddPersonaToEventa( eveID, perSpouseID, role );
             CreateRelationship( perSpouseID, "Spouse", perID, ref.f_id, &seq );
         }
 
@@ -388,6 +390,7 @@ void Process163File( wxFileName& fn )
         // Create a new reference from this line
         ref.Clear();
         ref.Save();
+        ref.FSetUserRef( "RD163" );
         seq = 0;
         str = line.Mid( 21, 22 ) + " " + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c163[block].indStart );
@@ -415,7 +418,8 @@ void Process163File( wxFileName& fn )
             str = GetDateStrMonthPlus( year, month );
         }
         dDateID = CreateDate( str, ref.f_id, &seq );
-        dEveID = CreateDeathEvent( ref.f_id, perID, dDateID, placeID, &seq );
+        dEveID = CreateDeathEventa( ref.f_id, perID, dDateID, placeID, &seq );
+        LinkOrCreateEventFromEventa( dEveID );
 
         if( block == 0 ) {  // This block may state age
             str = line.Mid( 44, 2 );
@@ -477,6 +481,7 @@ void Process1051File( wxFileName& fn )
         // Create a new reference from this line
         ref.Clear();
         ref.Save();
+        ref.FSetUserRef( "RD1051" );
         seq = 0;
 
         dateID = CreateDate( line.Mid( 0, 11 ), ref.f_id, &seq );
@@ -717,10 +722,12 @@ void Process1051File( wxFileName& fn )
         if( !name1st.IsEmpty() ) {
             name1st << " " << surname;
             per1stID = CreatePersona( ref.f_id, ind1stID, name1st, sex, &seq );
-            cEve1stID = CreateChrisEvent( ref.f_id, per1stID, dateID, placeID, &seq );
+            cEve1stID = CreateChrisEventa( ref.f_id, per1stID, dateID, placeID, &seq );
+        } else {
+            cEve1stID = 0;
         }
         perID = CreatePersona( ref.f_id, indID, name, sex, &seq ); 
-        cEveID = CreateChrisEvent( ref.f_id, perID, dateID, placeID, &seq );
+        cEveID = CreateChrisEventa( ref.f_id, perID, dateID, placeID, &seq );
 
         if( !bDateStr.IsEmpty() ) {
             // We have a birth event
@@ -731,7 +738,7 @@ void Process1051File( wxFileName& fn )
         if( parentNameID ) {
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, parentNameID, &seq );
             perParentID = CreatePersona( ref.f_id, parentID, parentNameID, SEX_Unstated );
-            AddPersonaToEvent( cEveID, perParentID, recEventTypeRole::ROLE_Baptism_Parent );
+            AddPersonaToEventa( cEveID, perParentID, recEventTypeRole::ROLE_Baptism_Parent );
         }
         if( perParentID ) {
             CreateRelationship( perParentID, "Parent", perID, ref.f_id, &seq );
@@ -741,9 +748,9 @@ void Process1051File( wxFileName& fn )
             recReferenceEntity::Create( ref.f_id, recReferenceEntity::TYPE_Name, fatherNameID, &seq );
             perFatherID = CreatePersona( ref.f_id, fatherID, fatherNameID, SEX_Male );
             if( per1stID ) {
-                AddPersonaToEvent( cEve1stID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
+                AddPersonaToEventa( cEve1stID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
             }
-            AddPersonaToEvent( cEveID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
+            AddPersonaToEventa( cEveID, perFatherID, recEventTypeRole::ROLE_Baptism_Parent );
         }
         if( perFatherID ) {
             if( per1stID ) {
@@ -763,9 +770,9 @@ void Process1051File( wxFileName& fn )
                 perMotherID = CreatePersona( ref.f_id, motherID, motherNameID, SEX_Female );
             }
             if( per1stID ) {
-                AddPersonaToEvent( cEve1stID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
+                AddPersonaToEventa( cEve1stID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
             }
-            AddPersonaToEvent( cEveID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
+            AddPersonaToEventa( cEveID, perMotherID, recEventTypeRole::ROLE_Baptism_Parent );
         }
 
         if( perMotherID ) {
@@ -781,26 +788,26 @@ void Process1051File( wxFileName& fn )
         if( bEveID ) {
             bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
             if( perMotherID ) {
-                AddPersonaToEvent( bEveID, perMotherID, recEventTypeRole::ROLE_Birth_Mother );
+                AddPersonaToEventa( bEveID, perMotherID, recEventTypeRole::ROLE_Birth_Mother );
             }
         }
 
         if( TidyStr( &residence ) ) {
             rPlaceID = CreatePlace( residence, ref.f_id, &seq );
-            rEveID = CreateResidenceEvent( dateID, rPlaceID, ref.f_id, &seq );
+            rEveID = CreateResidenceEventa( dateID, rPlaceID, ref.f_id, &seq );
             if( perParentID ) {
-                AddPersonaToEvent( rEveID, perParentID, recEventTypeRole::ROLE_Residence_Family );
+                AddPersonaToEventa( rEveID, perParentID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( perFatherID ) {
-                AddPersonaToEvent( rEveID, perFatherID, recEventTypeRole::ROLE_Residence_Family );
+                AddPersonaToEventa( rEveID, perFatherID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( perMotherID ) {
-                AddPersonaToEvent( rEveID, perMotherID, recEventTypeRole::ROLE_Residence_Family );
+                AddPersonaToEventa( rEveID, perMotherID, recEventTypeRole::ROLE_Residence_Family );
             }
             if( per1stID ) {
-                AddPersonaToEvent( rEveID, per1stID, recEventTypeRole::ROLE_Residence_Family );
+                AddPersonaToEventa( rEveID, per1stID, recEventTypeRole::ROLE_Residence_Family );
             }
-            AddPersonaToEvent( rEveID, perID, recEventTypeRole::ROLE_Residence_Family );
+            AddPersonaToEventa( rEveID, perID, recEventTypeRole::ROLE_Residence_Family );
         }
 
 //        if( !occupation.IsEmpty() && perFatherID ) {
@@ -814,6 +821,8 @@ void Process1051File( wxFileName& fn )
         }
         ref.f_title << recPersona::GetNameStr( perID );
         ref.Save();
+        LinkOrCreateEventFromEventa( cEve1stID );
+        LinkOrCreateEventFromEventa( cEveID );
     }
 }
 

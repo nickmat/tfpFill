@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -239,131 +239,145 @@ void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names )
 
 idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Birth of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Birth;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.FSetTitle( "Birth of " + recPersona::GetNameStr( perID ) );
+    eventa.FSetTypeID( recEventType::ET_Birth );
+    eventa.FSetDate1ID( dateID );
+    eventa.FSetPlaceID( placeID );
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create(
+        refID, recReferenceEntity::TYPE_Event, eventa.FGetID(), pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
-    ep.f_per_id = perID;
-    ep.f_role_id = recEventTypeRole::ROLE_Birth_Born;
-    ep.f_per_seq = 1;
+    ep.FSetEventaID( eventa.FGetID() );
+    ep.FSetPerID( perID );
+    ep.FSetRoleID( recEventTypeRole::ROLE_Birth_Born );
+    ep.FSetPerSeq( 1 );
     ep.Save();
 
-    return event.f_id;
+//    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+
+    return eventa.FGetID();
 }
 
 idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Registered birth of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_RegBirth;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.f_title = "Registered birth of " + recPersona::GetNameStr( perID );
+    eventa.f_type_id = recEventType::ET_RegBirth;
+    eventa.f_date1_id = dateID;
+    eventa.f_place_id = placeID;
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eventa.f_id, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
+    ep.f_eventa_id = eventa.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_RegBirth_Born;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+    return eventa.f_id;
 }
 
-idt CreateChrisEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
+idt CreateChrisEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Baptism of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Baptism;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.f_title = "Baptism of " + recPersona::GetNameStr( perID );
+    eventa.f_type_id = recEventType::ET_Baptism;
+    eventa.f_date1_id = dateID;
+    eventa.f_place_id = placeID;
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eventa.f_id, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
+    ep.f_eventa_id = eventa.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Baptism_Baptised;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+//    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+    return eventa.f_id;
 }
 
 idt CreateMarriageEvent( idt perID, idt dateID, idt placeID, long role, idt refID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Marriage of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Marriage;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.f_title = "Marriage of " + recPersona::GetNameStr( perID );
+    eventa.f_type_id = recEventType::ET_Marriage;
+    eventa.f_date1_id = dateID;
+    eventa.f_place_id = placeID;
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eventa.f_id, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
+    ep.f_eventa_id = eventa.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = role;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+    return eventa.f_id;
 }
 
-idt CreateDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
+idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Death of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Death;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.f_title = "Death of " + recPersona::GetNameStr( perID );
+    eventa.f_type_id = recEventType::ET_Death;
+    eventa.f_date1_id = dateID;
+    eventa.f_place_id = placeID;
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eventa.f_id, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
+    ep.f_eventa_id = eventa.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_Death_Died;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+//    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+    return eventa.f_id;
 }
 
 idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Registered death of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_RegDeath;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa eventa(0);
+    eventa.f_title = "Registered death of " + recPersona::GetNameStr( perID );
+    eventa.f_type_id = recEventType::ET_RegDeath;
+    eventa.f_date1_id = dateID;
+    eventa.f_place_id = placeID;
+    eventa.UpdateDatePoint();
+    eventa.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eventa.f_id, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
+    ep.f_eventa_id = eventa.f_id;
     ep.f_per_id = perID;
     ep.f_role_id = recEventTypeRole::ROLE_RegDeath_Died;
     ep.f_per_seq = 1;
     ep.Save();
 
-    return event.f_id;
+    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
+//    assert( eveID != 0 );
+    return eventa.f_id;
 }
 
-idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
+idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
     recEventa e(0);
     e.FSetTitle( "Burial of " + recPersona::GetNameStr( perID ) );
@@ -381,24 +395,29 @@ idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq 
     ep.FSetPerSeq( 1 );
     ep.Save();
 
+//    idt eveID = LinkOrCreateEventFromEventa( e.FGetID() );
+//    assert( eveID != 0 );
     return e.FGetID();
 }
 
-idt CreateResidenceEvent( idt dateID, idt placeID, idt refID, int* pseq )
+idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq )
 {
-    recEventa event(0);
-    event.f_title = "Residence at " + recPlace::GetAddressStr( placeID );
-    event.f_type_id = recEventType::ET_Residence;
-    event.f_date1_id = dateID;
-    event.f_place_id = placeID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa ea(0);
+    ea.FSetTitle( "Residence at " + recPlace::GetAddressStr( placeID ) );
+    ea.FSetTypeID( recEventType::ET_Residence );
+    ea.FSetDate1ID( dateID );
+    ea.FSetPlaceID( placeID );
+    ea.UpdateDatePoint();
+    ea.Save();
+    idt eaID = ea.FGetID();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eaID, pseq );
 
-    return event.f_id;
+    idt eveID = LinkOrCreateEventFromEventa( eaID );
+//    assert( eveID != 0 );
+    return eaID;
 }
 
-idt CreateFamilyRelEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
+idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
     recEventa e(0);
     e.FSetTitle( "Family of " + recPersona::GetNameStr( perID ) );
@@ -428,10 +447,12 @@ idt CreateFamilyRelEvent( idt refID, idt perID, idt dateID, idt placeID, int* ps
     ep.FSetPerSeq( 1 );
     ep.Save();
 
+    idt eveID = LinkOrCreateEventFromEventa( e.FGetID() );
+//    assert( eveID != 0 );
     return e.FGetID();
 }
 
-void AddPersonaToEvent( idt eventID, idt perID, idt roleID )
+void AddPersonaToEventa( idt eventID, idt perID, idt roleID )
 {
     if( eventID == 0 || perID == 0 ) return;
     recEventaPersona ep(0);
@@ -446,22 +467,25 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int
     if( occ.empty() ) return 0;
     idt occID = recEventTypeRole::FindOrCreate( occ, recEventType::ET_Occupation );
 
-    recEventa event(0);
-    event.f_title = "Occupation of " + recPersona::GetNameStr( perID );
-    event.f_type_id = recEventType::ET_Occupation;
-    event.f_date1_id = dateID;
-    event.UpdateDatePoint();
-    event.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, event.f_id, pseq );
+    recEventa ea(0);
+    ea.FSetTypeID( recEventType::ET_Occupation );
+    ea.FSetDate1ID( dateID );
+    ea.UpdateDatePoint();
+    ea.SetAutoTitle( recPersona::GetNameStr( perID ) );
+    ea.Save();
+    idt eaID = ea.FGetID();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eaID, pseq );
 
     recEventaPersona ep(0);
-    ep.f_eventa_id = event.f_id;
-    ep.f_per_id = perID;
-    ep.f_role_id = occID;
-    ep.f_per_seq = 1;
+    ep.FSetEventaID( eaID );
+    ep.FSetPerID( perID );
+    ep.FSetRoleID( occID );
+    ep.FSetPerSeq( 1 );
     ep.Save();
 
-    return event.f_id;
+    idt eveID = LinkOrCreateEventFromEventa( eaID );
+//    assert( eveID != 0 );
+    return eaID;
 }
 
 idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq )
@@ -473,7 +497,6 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int*
     recEventa er(0);
     er.FSetTypeID( recEventType::ET_Condition );
     er.FSetDate1ID( dateID );
-//    er.FSetDate2ID( dateID );
     er.UpdateDatePoint();
     er.SetAutoTitle( recPersona::GetNameStr( perID ) );
     er.Save();
@@ -487,7 +510,8 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int*
     ep.f_per_seq = 1;
     ep.Save();
 
-    LinkOrCreateEventFromEventa( erID );
+    idt eveID = LinkOrCreateEventFromEventa( erID );
+//    assert( eveID != 0 );
     return erID;
 }
 idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq )
@@ -525,10 +549,13 @@ void rAddNameToPersona( idt perID, idt nameID )
 
 idt LinkOrCreateEventFromEventa( idt eaID )
 {
+    if( eaID == 0 ) {
+        return 0;
+    }
     idt eID = 0;
     recEventa ea(eaID);
     recEventType et( ea.FGetTypeID() );
-    recIdVec eIDs = ea.FindMatchingEvents( recEventa::recEVENT_Link_IndPer );
+    recIdVec eIDs = ea.FindLinkedEvents( recEventa::recEVENT_Link_IndPer );
     if( et.FGetGrp() == recET_GRP_Birth ||
         et.FGetGrp() == recET_GRP_Death ||
         et.FGetGrp() == recET_GRP_Personal
@@ -540,12 +567,14 @@ idt LinkOrCreateEventFromEventa( idt eaID )
         for( size_t i = 0 ; i < eIDs.size() ; i++ ) {
             recEventEventa::Create( eIDs[i], eaID, conf );
             recEvent::SetDatePeriodToInclude( eIDs[i], ea.FGetDate1ID() );
+            recEvent::CreateRolesFromEventa( eIDs[i], eaID );
         }
         eID = eIDs[0];
-    } else if(
-        et.FGetGrp() == recET_GRP_NrBirth ||
-        et.FGetGrp() == recET_GRP_NrDeath
-    ) {
+//    } else if(
+//        et.FGetGrp() == recET_GRP_NrBirth ||
+//        et.FGetGrp() == recET_GRP_NrDeath
+//    ) {
+    } else {
         recIdVec matched_eIDs;
         recDate date1(ea.FGetDate1ID()); 
         for( size_t i = 0 ; i < eIDs.size() ; i++ ) {
@@ -566,37 +595,21 @@ idt LinkOrCreateEventFromEventa( idt eaID )
         for( size_t i = 0 ; i < matched_eIDs.size() ; i++ ) {
             recEventEventa::Create( matched_eIDs[i], eaID, conf );
             recEvent::SetDatePeriodToInclude( matched_eIDs[i], ea.FGetDate1ID() );
+            recEvent::CreateRolesFromEventa( matched_eIDs[i], eaID );
         }
         eID = eIDs[0];
-    } else {
-        wxASSERT( false ); // TODO:                           <<=============<<<<<<
+//    } else {
+//        wxASSERT( false ); // TODO:                           <<=============<<<<<<
+//        eID = 0;
     }
     return eID;
 }
 
 idt CreateEventFromEventa( idt eaID )
 {
-    recEventa ea(eaID);
-    recEvent e(0);
-    e.FSetTitle( ea.FGetTitle() );
-    e.FSetTypeID( ea.FGetTypeID() );
-    e.FSetDate1ID( recDate::Create( ea.FGetDate1ID() ) );
-    e.FSetDate2ID( recDate::Create( ea.FGetDate2ID() ) );
-    e.FSetPlaceID( ea.FGetPlaceID() );
-    e.FSetNote( ea.FGetNote() );
-    e.FSetDatePt( ea.FGetDatePt() );
-    e.Save();
-    idt eID = e.FGetID();
+    idt eID = recEvent::CreateFromEventa( eaID );
     recEventEventa::Create( eID, eaID );
-
-    recEventaPersonaVec eps = ea.GetEventaPersonas();
-    for( size_t i = 0 ; i < eps.size() ; i++ ) {
-        recIdVec indIDs = recPersona::GetIndividualIDs( eps[i].FGetPerID() );
-        idt roleID = eps[i].FGetRoleID();
-        for( size_t j = 0 ; j < indIDs.size() ; j++ ) {
-            recIndividualEvent::Create( indIDs[j], eID, roleID );
-        }
-    }
+    recEvent::CreateRolesFromEventa( eID, eaID );
     return eID;
 }
 

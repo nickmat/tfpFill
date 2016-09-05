@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 2016, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -196,6 +196,7 @@ void Process1841CensusIndividuals(
             occ = xmlGetAllContent( data );
             occID = CreateOccupation( occ, refID, perID, dateID, pseq );
             if( occID ) {
+                recEventa::CreatePersonalEvent( occID );
                 xmlCreateLink( data, "tfp:"+recEventa::GetIdStr( occID ) );
             }
             data = xmlGetNext( data, "td" );  // Same county column.
@@ -219,24 +220,28 @@ void Process1841CensusIndividuals(
 }
 
 void ProcessCensusIndividuals(
-    wxXmlNode* row, idt refID, idt eventID, idt dateID, int* pseq )
+    wxXmlNode* row, idt refID, idt eventaID, idt dateID, idt placeID, int* pseq )
 {
     wxXmlNode* data;
     wxXmlNode* relNode;
     wxXmlNode* condNode;
     wxXmlNode* span;
-    idt indID, bplaceID, ageID, rsID, attID;
+    idt indID, bplaceID, ageID, attID;
     int attSeq = 0;
     wxString name;
-    idt headPerId = 0;
+    idt headPerID = 0, spousePerID = 0;
+    recIdVec childIDs;
     wxString relStr;
     wxString condStr;
     Sex sex;
     wxString occ;
     recEventaPersona ep(0);
-    ep.f_eventa_id = eventID;
+    ep.f_eventa_id = eventaID;
     ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
+
+    idt eaResidentID = CreateResidenceEventa( dateID, placeID, refID, pseq );
+
     while( row ) {
         data = xmlGetFirstChild( row, "td" );  // In name column.
         indID = GetIndividualAnchor( data, &name );
@@ -270,19 +275,32 @@ void ProcessCensusIndividuals(
             attSeq = 0;
 
             relStr = xmlGetAllContent( relNode );
-            if( headPerId == 0 || relStr == "Head" ) {
-                headPerId = perID;
-            } else {
-                rsID = 0;
-//                rsID = CreateRelationship( perID, relStr, headPerId, refID, pseq );
-//                xmlCreateLink( relNode, "tfpi:"+recRelationship::GetIdStr( rsID ) );
+            if( headPerID == 0 || relStr == "Head" ) {
+                headPerID = perID;
+            } else if( spousePerID == 0 && headPerID != 0 && relStr == "Wife" ) {
+                spousePerID = perID;
+            } else if( headPerID != 0 && ( relStr == "Daur" || relStr == "Son" ) ) {
+                childIDs.push_back( perID );
             }
+
+            recEventTypeRole::Role resRoleID;
+            if( relStr == "Visitor" ) {
+                resRoleID = recEventTypeRole::ROLE_Residence_Visitor;
+            } else if( relStr == "Boarder" ) {
+                resRoleID = recEventTypeRole::ROLE_Residence_Boarder;
+            } else if( relStr == "Lodger" ) {
+                resRoleID = recEventTypeRole::ROLE_Residence_Lodger;
+            } else {
+                resRoleID = recEventTypeRole::ROLE_Residence_Family;
+            }
+            AddPersonaToEventa( eaResidentID, perID, resRoleID );
 
             data = xmlGetNext( data, "td" );  // In Birthplace column.
             bplaceID = CreatePlace( data, refID, pseq );
 
             attID = CreateCondition( GetConditionStr( sex, condStr ), refID, perID, dateID, pseq );
             if( attID ) {
+                recEventa::CreatePersonalEvent( attID );
                 xmlCreateLink( condNode, "tfp:"+recEventa::GetIdStr( attID ) );
             }
 
@@ -303,13 +321,29 @@ void ProcessCensusIndividuals(
                 occ = xmlGetAllContent( span );
                 attID = CreateOccupation( occ, refID, perID, dateID, pseq );
                 if( attID ) {
+                    recEventa::CreatePersonalEvent( attID );
                     xmlCreateLink( span, "tfp:"+recEventa::GetIdStr( attID ) );
                 }
             }
         }
         row = xmlGetNext( row, "tr" );
     }
+    if( headPerID != 0 && ( spousePerID != 0 || !childIDs.empty() ) ) {
+        // We have a family.
+        idt eaID = CreateFamilyRelEventa( refID, headPerID, dateID, placeID, pseq );
+        if( spousePerID ) {
+            AddPersonaToEventa( eaID, spousePerID, recEventTypeRole::ROLE_Family_Wife );
+        }
+        for( size_t i = 0 ; i < childIDs.size() ; i++ ) {
+            AddPersonaToEventa( eaID, childIDs[i], recEventTypeRole::ROLE_Family_Child );
+        }
+        recEventa::CreateFamilyLink( eaID );
+    }
+    recEventa::CreatePersonalEvent( eaResidentID );
+//    LinkOrCreateEventFromEventa( eventaID );
+    CreateEventFromEventa( eventaID );
 }
+
 
 void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
 {
@@ -360,7 +394,7 @@ void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
         xmlCreateLink( addrNode, "tfpi:P"+recGetStr( placeID ) );
     }
     idt eventID = CreateCensusEvent( title, g_1901CensusDateID, placeID, refID, &refSeq );
-    ProcessCensusIndividuals( row, refID, eventID, g_1901CensusDateID, &refSeq );
+    ProcessCensusIndividuals( row, refID, eventID, g_1901CensusDateID, placeID, &refSeq );
 }
 
 void CreateUkCensus( idt refID, idt dateID, wxXmlNode* refNode, const wxString& title )
@@ -380,7 +414,7 @@ void CreateUkCensus( idt refID, idt dateID, wxXmlNode* refNode, const wxString& 
     if( dateID == g_1841CensusDateID ) {
         Process1841CensusIndividuals( row, refID, eventID, dateID, address, &refSeq );
     } else {
-        ProcessCensusIndividuals( row, refID, eventID, dateID, &refSeq );
+        ProcessCensusIndividuals( row, refID, eventID, dateID, placeID, &refSeq );
     }
 }
 
@@ -481,7 +515,7 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         dateID = CreateDate( birthStr, refID, &refSeq );
         placeID = 0;
         eaID = CreateBirthEvent( refID, perID, dateID, placeID, &refSeq );
-        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Birth_Mother );
+        AddPersonaToEventa( eaID, motherPerID, recEventTypeRole::ROLE_Birth_Mother );
         LinkOrCreateEventFromEventa( eaID );
         xmlCreateLink( birthDateCell, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( birthEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eaID ) );
@@ -497,9 +531,9 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
         }
         refDateID = dateID = CreateDate( chrisDateStr, refID, &refSeq );
         placeID = CreatePlace( chrisPlaceStr, refID, &refSeq );
-        eaID = CreateChrisEvent( refID, perID, dateID, placeID, &refSeq );
-        AddPersonaToEvent( eaID, fatherPerID, recEventTypeRole::ROLE_Baptism_Parent );
-        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent );
+        eaID = CreateChrisEventa( refID, perID, dateID, placeID, &refSeq );
+        AddPersonaToEventa( eaID, fatherPerID, recEventTypeRole::ROLE_Baptism_Parent );
+        AddPersonaToEventa( eaID, motherPerID, recEventTypeRole::ROLE_Baptism_Parent );
         LinkOrCreateEventFromEventa( eaID );
         wxXmlNode* link = xmlCreateLink( chrisCell, 0, pos, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( link->GetNext(), 2, -1, "tfpi:"+recPlace::GetIdStr( placeID ) );
@@ -508,27 +542,29 @@ void CreateIgiBaptism( idt refID, wxXmlNode* refNode )
     if( !deathStr.IsEmpty() ) {
         dateID = CreateDate( deathStr, refID, &refSeq );
         placeID = 0;
-        eaID = CreateDeathEvent( refID, perID, dateID, placeID, &refSeq );
+        eaID = CreateDeathEventa( refID, perID, dateID, placeID, &refSeq );
+        LinkOrCreateEventFromEventa( eaID );
         xmlCreateLink( deathCell, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( deathEventCell, 0, 5, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
     if( !burialStr.IsEmpty() ) {
         dateID = CreateDate( burialStr, refID, &refSeq );
         placeID = 0;
-        eaID = CreateBurialEvent( refID, perID, dateID, placeID, &refSeq );
+        eaID = CreateBurialEventa( refID, perID, dateID, placeID, &refSeq );
+        LinkOrCreateEventFromEventa( eaID );
         xmlCreateLink( burialCell, "tfpi:"+recDate::GetIdStr( dateID ) );
         xmlCreateLink( burialEventCell, 0, 6, "tfp:"+recEventa::GetIdStr( eaID ) );
     }
     if( fatherPerID ) {
-        eaID = CreateFamilyRelEvent( refID, fatherPerID, refDateID, 0, &refSeq );
-        AddPersonaToEvent( eaID, motherPerID, recEventTypeRole::ROLE_Family_Wife );
+        eaID = CreateFamilyRelEventa( refID, fatherPerID, refDateID, 0, &refSeq );
+        AddPersonaToEventa( eaID, motherPerID, recEventTypeRole::ROLE_Family_Wife );
     } else if( motherPerID ) {
-        eaID = CreateFamilyRelEvent( refID, motherPerID, refDateID, 0, &refSeq );
+        eaID = CreateFamilyRelEventa( refID, motherPerID, refDateID, 0, &refSeq );
     } else {
         eaID = 0;
     }
     if( eaID ) {
-        AddPersonaToEvent( eaID, perID, recEventTypeRole::ROLE_Family_Child );
+        AddPersonaToEventa( eaID, perID, recEventTypeRole::ROLE_Family_Child );
         recEventa::CreateFamilyLink( eaID );
     }
 }
@@ -544,6 +580,18 @@ IntRefReturn InterpretRef( idt refID, const wxString& h1Class, const wxString& t
     ListIndividuals( refNode, indList, names );
     wxString refFormat = refNode->GetAttribute( "id" );
     wxString refClass = refNode->GetAttribute( "class" );
+
+    if( refClass == "custom" ) {
+        return INTREF_Custom;
+    }
+
+    wxString refStr = "<!-- HTML -->\n" + xmlGetSource( refNode );
+    recReference ref(0);
+    ref.FSetID( refID );
+    ref.FSetTitle( title );
+    ref.FSetStatement( refStr );
+    ref.FSetUserRef( "RD"+recGetStr( refID ) );
+    ref.Save();
 
     if( h1Class == "igi-chr" ) {
         CreateIgiBaptism( refID, refNode );
@@ -567,19 +615,9 @@ IntRefReturn InterpretRef( idt refID, const wxString& h1Class, const wxString& t
         } else if( year == 1911 ) {
             CreateUkCensus( refID, g_1911CensusDateID, refNode, title );
         }
-    } else if( refClass == "custom" ) {
-        return INTREF_Custom;
     } else {
         AddPersonas( refID, indList, names );
     }
-
-    wxString refStr = "<!-- HTML -->\n" + xmlGetSource( refNode );
-    recReference ref(0);
-    ref.FSetID( refID );
-    ref.FSetTitle( title );
-    ref.FSetStatement( refStr );
-    ref.FSetUserRef( "RD"+recGetStr( refID ) );
-    ref.Save();
     return INTREF_Done;
 }
 

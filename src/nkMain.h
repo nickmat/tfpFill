@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 class wxXmlNode;
 typedef std::vector< wxFileName > Filenames;
 
+
 /* nkMain.cpp */
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
@@ -57,8 +58,8 @@ extern void ProcessCustomFile( wxFileName& fn );
 extern bool ExportGedcom( const wxString& path );
 extern idt CreateDate( const wxString& date, idt refID, int* pseq );
 extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq );
-extern idt CreatePlace( const wxString& address, idt refID, int* pseq );
-extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID, int* pseq );
+extern idt CreatePlace( const wxString& address, idt refID, int* pseq = NULL );
+extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID, int* pseq = NULL );
 extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq );
 extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex );
 extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq );
@@ -66,15 +67,15 @@ extern idt CreateName( const wxString& surname, const wxString& givens );
 extern void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names );
 extern idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern idt CreateChrisEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
+extern idt CreateChrisEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateMarriageEvent( idt perID, idt dateID, idt placeID, long role, idt refID, int* pseq );
-extern idt CreateDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
+extern idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern idt CreateBurialEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern idt CreateResidenceEvent( idt dateID, idt placeID, idt refID, int* pseq );
-extern idt CreateFamilyRelEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern void AddPersonaToEvent( idt eventID, idt perID, idt roleID );
+extern idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
+extern idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq );
+extern idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
+extern void AddPersonaToEventa( idt eventID, idt perID, idt roleID );
 extern idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );

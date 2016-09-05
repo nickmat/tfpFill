@@ -41,17 +41,18 @@
 #include <rec/recDb.h>
 
 #include <wx/cmdline.h>
-#include <wx/tokenzr.h>
-#include <wx/textfile.h>
+#include <wx/fileconf.h>
 #include <wx/filename.h>
+#include <wx/textfile.h>
+#include <wx/tokenzr.h>
 #include <wx/wfstream.h>
 
 #include <ctime>
 
 
-#define VERSION   "0.1.0"
+#define VERSION   "0.2.0"
 #define PROGNAME  "fill for TFP"
-#define PROGDATE  "2011 - 2015"
+#define PROGDATE  "2011 - 2016"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
@@ -140,6 +141,7 @@ void TweakDatabase()
 {
     recIndividual ind;
 
+    // Set the privacy for close family 
     ind.ReadID( 3 ); // Chris
     ind.FSetPrivacy( 20 ); // Set privacy to 20 (Name only)
     ind.Save();
@@ -183,6 +185,7 @@ int main( int argc, char** argv )
         fprintf( stderr, "Failed to initialize the wxWidgets library, aborting." );
         return EXIT_FAILURE;
     }
+    recInitialize();
 
     wxCmdLineParser parser( desc, argc, argv );
     parser.SetLogo( g_title );
@@ -204,53 +207,28 @@ int main( int argc, char** argv )
         return DoTest( parser.GetParam() );
     }
 
-    wxFileName inFName( parser.GetParam() );
-    if( !inFName.FileExists() ) {
-        wxPrintf( "Input file \"%s\" not found.\n", inFName.GetFullPath() );
+    wxFileName configName( parser.GetParam() );
+    configName.MakeAbsolute();
+
+    if( !configName.FileExists() ) {
+        wxPrintf( "Input file \"%s\" not found.\n", configName.GetFullPath() );
         return EXIT_FAILURE;
     }
 
-    recInitialize();
-    wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
+    wxFileConfig conf( "", "", configName.GetFullPath(), "", wxCONFIG_USE_LOCAL_FILE );
 
-    wxString famIdxFile;
-    wxString inputDataFile;
-    wxString gedcomFile;
-    wxString refFolder;
-    wxString refFile;
-    wxString outFile;
-    wxTextFile cFile;
-    cFile.Open( inFName.GetFullPath() );
-    wxString line;
-    for( line = cFile.GetFirstLine() ; !cFile.Eof() ; line = cFile.GetNextLine() ) {
-        if( line.compare( 0, 15, "input-data-file" ) == 0 ) {
-            inputDataFile = line.Mid( 16 );
-            continue;
-        }
-        if( line.compare( 0, 17, "input-gedcom-file" ) == 0 ) {
-            gedcomFile = line.Mid( 18 );
-            continue;
-        }
-        if( line.compare( 0, 18, "input-family-index" ) == 0 ) {
-            famIdxFile = line.Mid( 19 );
-            continue;
-        }
-        if( line.compare( 0, 16, "input-ref-folder" ) == 0 ) {
-            refFolder = line.Mid( 17 );
-            continue;
-        }
-        if( line.compare( 0, 14, "input-ref-file" ) == 0 ) {
-            refFile = line.Mid( 15 );
-            continue;
-        }
-        if( line.compare( 0, 11, "output-file" ) == 0 ) {
-            outFile = line.Mid( 12 );
-            continue;
-        }
-    }
-    cFile.Close();
-    wxPrintf( "Current folder: %s\n", wxGetCwd() );
-    wxPrintf( "Command File: [%s]\n", inFName.GetFullPath() );
+    wxString gedcomFile = conf.Read( "/Input/Gedcom-File" );
+    bool gedSourRec = conf.ReadBool( "/Input/Gedcom-Source-Records", true );
+    wxString famIdxFile = conf.Read( "/Input/Family-Index" );
+    wxString refFolder = conf.Read( "/Input/Ref-Folder" );
+    wxString inputDataFile = conf.Read( "/Input/Data-File" );
+    wxString refFile = conf.Read( "/Input/Ref-File" );
+    wxString outFile = conf.Read( "/Output/Database" );
+
+    wxPrintf( "Database version: %s\n", recVerStr );
+    wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
+    wxPrintf( "Current folder: [%s]\n", wxGetCwd() );
+    wxPrintf( "Configuration File: [%s]\n", configName.GetFullPath() );
     wxPrintf( "Data file: [%s]\n", inputDataFile );
     wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
     wxPrintf( "Family index file: [%s]\n", famIdxFile );
@@ -282,18 +260,22 @@ int main( int argc, char** argv )
         recGedParse ged( gedcomFile );
         ged.SetUseXref( true );
         wxPrintf( "." );
-        unsigned flags = recGED_IMPORT_NO_POST_OPS | recGED_IMPORT_NO_SOUR_REC;
-//        unsigned flags = recGED_IMPORT_NO_SOUR_REC;
-//        unsigned flags = recGED_IMPORT_NO_POST_OPS;
+        unsigned flags = 0;
+        if( !famIdxFile.empty() ) {
+            flags |= recGED_IMPORT_NO_POST_OPS;
+        }
+        if( !gedSourRec ) {
+            flags |= recGED_IMPORT_NO_SOUR_REC;
+        }
         if( ged.Import( flags ) ) {
             if( !famIdxFile.empty() ) {
                 wxPrintf( " Done.\nUpdating links " );
                 recDb::Begin();
                 UpdateFamilyLinks( famIdxFile );
                 recDb::Commit();
+                ged.DoPostOperations();
             }
             wxPrintf( " Done.\nComplete GEDCOM input " );
-            ged.DoPostOperations();
             recDb::Begin();
             if( !refFile.empty() ) {
                 wxPrintf( " Done.\nInput Ref Breakdown File " );

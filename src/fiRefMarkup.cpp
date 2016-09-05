@@ -152,7 +152,7 @@ bool Eventa_IsEventMatch( const recEventa& ea, idt eventID )
 // if not, create one. Then create the EventEventa link.
 idt Eventa_CreateEventLink( const recEventa& ea )
 {
-    recCheckIdVec ces = ea.FindCheckedMatchingEvents();
+    recCheckIdVec ces = ea.FindCheckedLinkedEvents();
     if( ces.size() ) {
         for( size_t i = 0 ; i < ces.size() ; i++ ) {
             if( ces[i].GetFirstID() != 0 ) {
