@@ -50,6 +50,7 @@ extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 extern void ProcessRefFile( const wxString path, const wxString name, Filenames& customs );
 extern void ProcessRefFile2( const wxString path, const wxString name, Filenames& customs );
 extern bool InputRefFiles( const wxString& refFolder );
+extern void InputNoteFiles( const wxString& notesFolder );
 
 /* nkRefDocCustom.cpp */
 extern void ProcessCustomFile( wxFileName& fn );

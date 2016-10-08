@@ -731,6 +731,62 @@ if( filename == "rd00393.htm" ) {
     return true;
 }
 
+void ProcessIndNoteFile( idt indID, const wxString& note )
+{
+    wxString text;
+    size_t pos1 = note.find( "\n" );
+    size_t pos2 = pos1;
+    while( pos2 != wxString::npos ) {
+        pos2 = note.find( "<a href=", pos1 );
+        if( pos2 != wxString::npos ) {
+            text += note.substr( pos1, pos2 - pos1 );
+            wxString refStr = note.substr( pos2+19, 5 );
+            idt refID = recGetID( refStr );
+            text += "[R" + recGetStr( refID ) + "]";
+            pos1 = note.find( "</a>", pos2 ) + 4;
+        }
+    }
+    text += note.substr( pos1 );
+    text.Replace( "<br />", "" );
+    text.Replace( "<!-- Notes -->\n", "" );
+    text.Replace( "<!-- Photo List -->\n", "" );
+    text.Replace( "# Photo", "#Photo" );
+    text.Trim( true );
+    text.Trim( false );
+    recIndividual ind(indID);
+    ind.FSetNote( text );
+    ind.Save();
+}
 
+void InputNoteFiles( const wxString& notesFolder )
+{
+    wxDir ndir( notesFolder );
+    wxString indirname;
+    if( !ndir.Open( notesFolder ) ) {
+        return;
+    }
+    bool cont = ndir.GetFirst( &indirname, "in??", wxDIR_DIRS );
+    while( cont ) {
+        // Process Directory
+        wxDir indir;
+        wxString infilename;
+        if( !indir.Open( notesFolder + "/" + indirname ) ) {
+            return;
+        }
+        cont = indir.GetFirst( &infilename, "in0????.txt", wxDIR_FILES );
+        while( cont ) {
+            // Process File
+            idt indID = recGetID( infilename.substr( 2 ) );
+            wxString path = notesFolder + "/" + indirname + "/" + infilename;
+            wxFFile infile;
+            wxString note;
+            if( infile.Open( path ) && infile.ReadAll( &note ) ) {
+                ProcessIndNoteFile( indID, note );
+            }
+            cont = indir.GetNext( &infilename );
+        }
+        cont = ndir.GetNext( &indirname );
+    }
+}
 
 // End of nkRefDocuments.cpp file
