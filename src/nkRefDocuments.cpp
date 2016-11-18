@@ -220,10 +220,9 @@ void Process1841CensusIndividuals(
 }
 
 void ProcessCensusIndividuals(
-    wxXmlNode* row, idt refID, idt eventaID, idt dateID, idt placeID, int* pseq )
+    wxXmlNode* row, idt refID, idt cen_eaID, idt dateID, idt placeID, int* pseq )
 {
     wxXmlNode* data;
-    wxXmlNode* relNode;
     wxXmlNode* condNode;
     wxXmlNode* span;
     idt indID, bplaceID, ageID, attID;
@@ -235,19 +234,19 @@ void ProcessCensusIndividuals(
     wxString condStr;
     Sex sex;
     wxString occ;
-    recEventaPersona ep(0);
-    ep.f_eventa_id = eventaID;
-    ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
+    recEventaPersona cen_ep(0);
+    cen_ep.f_eventa_id = cen_eaID;
+    cen_ep.f_role_id = recEventTypeRole::ROLE_Census_Listed;
     int personaSeq = 0;
 
-    idt eaResidentID = CreateResidenceEventa( dateID, placeID, refID, pseq );
+    idt res_eaID = CreateResidenceEventa( dateID, placeID, refID, pseq );
 
     while( row ) {
         data = xmlGetFirstChild( row, "td" );  // In name column.
         indID = GetIndividualAnchor( data, &name );
         if( indID && !name.IsEmpty() ) {
             data = xmlGetNext( data, "td" );  // In Relation column.
-            relNode = data;
+            relStr = xmlGetAllContent( data );
             if( dateID == g_1911CensusDateID ) {  // 1911 has different order
                 data = xmlGetNext( data, "td" );  // In Age column.
                 ageID = CreateDateFromAge( data, dateID, refID, pseq );
@@ -268,13 +267,13 @@ void ProcessCensusIndividuals(
 
             idt perID = CreatePersona( refID, indID, name, sex, pseq );
             // Add persona to Census Event
-            ep.f_id = 0;
-            ep.f_per_id = perID;
-            ep.f_per_seq = ++personaSeq;
-            ep.Save();
+            cen_ep.FSetID( 0 );
+            cen_ep.FSetPerID( perID );
+            cen_ep.FSetPerSeq( ++personaSeq );
+            cen_ep.FSetNote( relStr );
+            cen_ep.Save();
             attSeq = 0;
 
-            relStr = xmlGetAllContent( relNode );
             if( headPerID == 0 || relStr == "Head" ) {
                 headPerID = perID;
             } else if( spousePerID == 0 && headPerID != 0 && relStr == "Wife" ) {
@@ -293,7 +292,7 @@ void ProcessCensusIndividuals(
             } else {
                 resRoleID = recEventTypeRole::ROLE_Residence_Family;
             }
-            AddPersonaToEventa( eaResidentID, perID, resRoleID );
+            AddPersonaToEventa( res_eaID, perID, resRoleID );
 
             data = xmlGetNext( data, "td" );  // In Birthplace column.
             bplaceID = CreatePlace( data, refID, pseq );
@@ -339,9 +338,9 @@ void ProcessCensusIndividuals(
         }
         recEventa::CreateFamilyLink( eaID );
     }
-    recEventa::CreatePersonalEvent( eaResidentID );
-//    LinkOrCreateEventFromEventa( eventaID );
-    CreateEventFromEventa( eventaID );
+    recEventa::CreatePersonalEvent( res_eaID );
+//    LinkOrCreateEventFromEventa( cen_eaID );
+    CreateEventFromEventa( cen_eaID );
 }
 
 

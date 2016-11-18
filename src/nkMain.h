@@ -72,7 +72,6 @@ extern idt CreateChrisEventa( idt refID, idt perID, idt dateID, idt placeID, int
 extern idt CreateMarriageEvent( idt perID, idt dateID, idt placeID, long role, idt refID, int* pseq );
 extern idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq );
 extern idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );

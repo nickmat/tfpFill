@@ -379,31 +379,29 @@ idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pse
 
 idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq )
 {
-    recEventa e(0);
-    e.FSetTitle( "Burial of " + recPersona::GetNameStr( perID ) );
-    e.FSetTypeID( recEventType::ET_Burial );
-    e.FSetDate1ID( dateID );
-    e.FSetPlaceID( placeID );
-    e.UpdateDatePoint();
-    e.Save();
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, e.FGetID(), pseq );
+    recEventa ea(0);
+    ea.FSetTitle( "Burial of " + recPersona::GetNameStr( perID ) );
+    ea.FSetTypeID( recEventType::ET_Burial );
+    ea.FSetDate1ID( dateID );
+    ea.FSetPlaceID( placeID );
+    ea.UpdateDatePoint();
+    ea.Save();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, ea.FGetID(), pseq );
 
     recEventaPersona ep(0);
-    ep.FSetEventaID( e.FGetID() );
+    ep.FSetEventaID( ea.FGetID() );
     ep.FSetPerID( perID );
     ep.FSetRoleID( recEventTypeRole::ROLE_Burial_Deceased );
     ep.FSetPerSeq( 1 );
     ep.Save();
 
-//    idt eveID = LinkOrCreateEventFromEventa( e.FGetID() );
-//    assert( eveID != 0 );
-    return e.FGetID();
+    return ea.FGetID();
 }
 
 idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq )
 {
     recEventa ea(0);
-    ea.FSetTitle( "Residence at " + recPlace::GetAddressStr( placeID ) );
+    ea.FSetTitle( "Household at " + recPlace::GetAddressStr( placeID ) );
     ea.FSetTypeID( recEventType::ET_Residence );
     ea.FSetDate1ID( dateID );
     ea.FSetPlaceID( placeID );
@@ -412,8 +410,6 @@ idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq )
     idt eaID = ea.FGetID();
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eaID, pseq );
 
-    idt eveID = LinkOrCreateEventFromEventa( eaID );
-//    assert( eveID != 0 );
     return eaID;
 }
 
