@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -51,6 +51,7 @@ enum RecordType {
     RT_Date,
     RT_Place,
     RT_Individual,
+    RT_Reference,
     RT_MAX
 };
 
@@ -86,6 +87,9 @@ wxString MakeIntoLink( const wxString& text, RecordType type, idt id )
         break;
     case RT_Individual:
         result << "tfp:I";
+        break;
+    case RT_Reference:
+        result << "tfp:R";
         break;
     default:
         wxASSERT( false ); // Shouldn't be here
@@ -191,10 +195,31 @@ struct C161
     int indStart;
 };
 
+enum RecSource {
+    RECSOURCE_none, RECSOURCE_FreeBMD, RECSOURCE_FindMyPast, RECSOURCE_Ancestry
+};
+
+wxString FindSource( const wxString& line, size_t* pos )
+{
+    wxString rs = "\n\n<b>Source</b>: ";
+    *pos = line.find( "[A]" );
+    if( *pos != wxString::npos ) {
+        return rs + "Ancestry.co.uk";
+    }
+    *pos = line.find( "[O]" );
+    if( *pos != wxString::npos ) {
+        return rs + "FindMyPast.co.uk";
+    }
+    *pos = line.find( "[F]" );
+    if( *pos != wxString::npos ) {
+        return rs + "FreeBMD.co.uk";
+    }
+    return "";
+}
+
 void Process161File( wxFileName& fn )
 {
     C161 c161[] = {
-        { 14, 0, 0, 101 },
         { 14, 68, 12, 115 },
         { 13, 70, 11, 115 },
         { 12, 77, 10, 121 }
@@ -216,7 +241,7 @@ void Process161File( wxFileName& fn )
         if( line.Mid( 0, 4 ) == "Year" ) {
             heading = "<pre><b>\n" + line + "\n\n";
             block++;
-            if( block > 3 ) break;
+            if( block > 2 ) break;
             continue;
         }
         if( !wxIsdigit( ch ) ) continue;
@@ -234,7 +259,7 @@ void Process161File( wxFileName& fn )
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
         line.Mid( 5, 2 ).ToLong( &month );
-        if( block < 2 ) {
+        if( block < 1 ) {
             str = GetDateStrQuarter( year, quarter );
         } else {
             str = GetDateStrMonth( year, month );
@@ -247,7 +272,7 @@ void Process161File( wxFileName& fn )
 
         rEveID = CreateRegBirthEvent( ref.f_id, perID, rDateID, placeID, &seq );
 
-        if( block < 2 ) {
+        if( block < 1 ) {
             str = GetDateStrQuarterPlus( year, quarter );
         } else {
             str = GetDateStrMonthPlus( year, month );
@@ -255,9 +280,14 @@ void Process161File( wxFileName& fn )
         bDateID = CreateDate( str, ref.f_id, &seq );
         bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, placeID, &seq );
 
-        if( block > 0 ) {
-            str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
-            perMotherID = CreatePersona( ref.f_id, 0, str, SEX_Female, &seq );
+        str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
+        if( !str.empty() ) {
+            idt indMotherID = 0;
+            recFamilyVec fams = recIndividual::GetParentList( indID );
+            if( !fams.empty() ) {
+                indMotherID = fams[0].FGetWifeID();
+            }
+            perMotherID = CreatePersona( ref.f_id, indMotherID, "? "+str, SEX_Female, &seq, "Mother" );
             rDatePt = recDate::GetDatePoint( rDateID, recDate::DATE_POINT_Beg );
             AddPersonaToEventa( rEveID, perMotherID, 
                 recEventTypeRole::ROLE_RegBirth_Parent );
@@ -267,6 +297,43 @@ void Process161File( wxFileName& fn )
             CreateRelationship( perMotherID, "Mother", perID, ref.f_id, &seq );
         }
 
+        size_t pos = wxString::npos;
+        wxString rs = FindSource( line, &pos );
+        size_t pos1 = line.find( "../or" );
+        size_t pos2;
+        if( pos1 != wxString::npos ) {
+            pos2 = line.find( "</span>", pos1 ) + 7;
+            while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+                pos2++;
+            }
+            line = line.substr( 0, pos1-22 ) + line.substr( pos2 );
+        } else if( pos != wxString::npos ) {
+            pos2 = pos+3;
+            while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+                pos2++;
+            }
+            line = line.substr( 0, pos ) + line.substr( pos2 );
+        }
+
+        pos1 = line.find( "../ps" );
+        wxASSERT( pos1 != wxString::npos );
+        pos2 = line.find( "</a>", pos1 ) + 4;
+        while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+            pos2++;
+        }
+        line = line.substr( 0, pos1-9 ) + line.substr( pos2 );
+
+        pos1 = line.find( "../rd" );
+        if( pos1 != wxString::npos ) {
+            idt noteRefID;
+            line.Mid( pos1+10, 5 ).ToLongLong( &noteRefID );
+            wxString str = "R" + recGetIDStr( noteRefID );
+            wxString refStr = MakeIntoLink( str, RT_Reference, noteRefID );
+            pos2 = line.find( "</a>", pos1 );
+            line = line.substr( 0, pos1-9 ) + refStr + line.substr( pos2+4 );
+        }
+
+        line.Trim();
         ref.f_title << year << " GRO Birth Index for " << recPersona::GetNameStr( perID );
         ref.f_statement 
             << "<!-- HTML -->\n" << heading 
@@ -274,7 +341,9 @@ void Process161File( wxFileName& fn )
             << MakeIntoLink( line.substr( 8, 12 ), RT_Individual, indID )
             << line.substr( 20, 23 ) // Forename
             << MakeIntoLink( placeStr, RT_Place, placeID )
-            << line.substr( 43+c161[block].distL ) << "\n\n</pre>\n"
+            << line.substr( 43+c161[block].distL )
+            << rs
+            << "\n\n</pre>\n"
         ;
         ref.Save();
     }
