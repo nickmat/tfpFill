@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -184,11 +184,12 @@ idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )
     return per.f_id;
 }
 
-idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq )
+idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq, const wxString& note )
 {
     recPersona per(0);
     per.FSetSex( sex );
     per.FSetRefID( refID );
+    per.FSetNote( note );
     per.Save();
 
     recName name(0);

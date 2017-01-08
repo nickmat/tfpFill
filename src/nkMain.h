@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2016, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -61,7 +61,7 @@ extern idt CreateDate( const wxString& date, idt refID, int* pseq );
 extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq );
 extern idt CreatePlace( const wxString& address, idt refID, int* pseq = NULL );
 extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID, int* pseq = NULL );
-extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq );
+extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq, const wxString& note = "" );
 extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex );
 extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq );
 extern idt CreateName( const wxString& surname, const wxString& givens );
