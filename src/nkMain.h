@@ -43,14 +43,11 @@ extern wxString CreateCommaList( wxString& first, wxString& second );
 extern wxString GetLastWord( const wxString& address );
 
 /* nkRefBreakdown.cpp */
-extern bool InputRefBreakdownFile( const wxString& refFile );
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
 /* nkRefDocuments.cpp */
 extern void ProcessRefFile( const wxString path, const wxString name, Filenames& customs );
-extern void ProcessRefFile2( const wxString path, const wxString name, Filenames& customs );
 extern bool InputRefFiles( const wxString& refFolder );
-extern void InputNoteFiles( const wxString& notesFolder );
 
 /* nkRefDocCustom.cpp */
 extern void ProcessCustomFile( wxFileName& fn );

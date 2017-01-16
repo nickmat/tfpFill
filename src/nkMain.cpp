@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2015, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -50,7 +50,7 @@
 #include <ctime>
 
 
-#define VERSION   "0.2.0"
+#define VERSION   "0.3.0"
 #define PROGNAME  "fill for TFP"
 #define PROGDATE  "2011 - 2016"
 
@@ -65,101 +65,14 @@ const wxString g_progName = PROGNAME;
 const wxString g_title = PROGNAME " - Version " VERSION VERSION_CONFIG "\n"
                          "Copyright (c) " PROGDATE " Nick Matthews\n\n";
 
+/* Revision history
+
+  8jan17  V0.2.0 - Includes all code for creating database from GEDCOM plus others.
+  active  V0.3.0 - Based on adding data from R*.htm files only.
+*/
+
 bool g_verbose = false;
 bool g_quiet   = false;
-
-bool UpdateFamilyLink( idt indID, idt famID )
-{
-    recIndividual ind(indID);
-    recFamily fam(famID);
-
-    if( ind.f_id == 0 ) {
-        // The individual should exist
-        return false;
-    }
-    fam.f_id = famID;
-    if( ind.f_sex == SEX_Female ) {
-        // Don't overwrite a value
-        if( fam.FGetWifeID() != 0 ) {
-            return true;
-        }
-        fam.f_wife_id = indID;
-    } else {
-        if( fam.FGetHusbID() != 0 ) {
-            return true;
-        }
-        fam.f_husb_id = indID;
-    }
-    fam.Save();
-    ind.f_fam_id = famID;
-    ind.Save();
-
-    return true;
-}
-
-bool UpdateFamilyLinks( const wxString& indFName )
-{
-    wxStringTokenizer tk;
-    wxString sName;
-    wxString gName;
-    wxString dateStr;
-    wxString indIdStr;
-    wxString famIdStr;
-    idt indID, famID;
-
-    wxTextFile iFile;
-    iFile.Open( indFName );
-    wxString line;
-    int state = 0;
-
-    for( line = iFile.GetFirstLine() ; !iFile.Eof() ; line = iFile.GetNextLine() ) {
-        switch( state )
-        {
-        case 0:
-            if( line == wxEmptyString ) state = 1;
-            break;
-        case 1:
-            if( line == wxEmptyString ) {
-                state = 2;
-                break;
-            }
-            tk.SetString( line, ",\n" );
-            sName = tk.GetNextToken();
-            gName = tk.GetNextToken();
-            dateStr = tk.GetNextToken();
-            indIdStr = tk.GetNextToken();
-            famIdStr = tk.GetNextToken();
-            indIdStr.ToLongLong( &indID );
-            famIdStr.ToLongLong( &famID );
-            if( !UpdateFamilyLink( indID, famID ) ) return false;
-        }
-    }
-    return true;
-}
-
-void TweakDatabase()
-{
-    recIndividual ind;
-
-    // Set the privacy for close family 
-    recDb::Begin();
-    ind.ReadID( 3 ); // Chris
-    ind.FSetPrivacy( 20 ); // Set privacy to 20 (Name only)
-    ind.Save();
-    ind.ReadID( 4 ); // Juliette
-    ind.FSetPrivacy( 20 );
-    ind.Save();
-    ind.ReadID( 5 ); // Nick
-    ind.FSetPrivacy( 20 );
-    ind.Save();
-    ind.ReadID( 21 ); // Ecki
-    ind.FSetPrivacy( 20 );
-    ind.Save();
-    ind.ReadID( 27 ); // Mary
-    ind.FSetPrivacy( 20 );
-    ind.Save();
-    recDb::Commit();
-}
 
 /*#*************************************************************************
  **  main
@@ -219,13 +132,10 @@ int main( int argc, char** argv )
 
     wxFileConfig conf( "", "", configName.GetFullPath(), "", wxCONFIG_USE_LOCAL_FILE );
 
-    wxString gedcomFile = conf.Read( "/Input/Gedcom-File" );
-    bool gedSourRec = conf.ReadBool( "/Input/Gedcom-Source-Records", true );
-    wxString famIdxFile = conf.Read( "/Input/Family-Index" );
     wxString initDatabase = conf.Read( "/Input/Initial-Database" );
-    wxString notesFolder = conf.Read( "/Input/Notes-Folder" );
+//    wxString notesFolder_ = conf.Read( "/Input/Notes-Folder" );
     wxString refFolder = conf.Read( "/Input/Ref-Folder" );
-    wxString refFile = conf.Read( "/Input/Ref-File" );
+//    wxString refFile = conf.Read( "/Input/Ref-File" );
     wxString outFile = conf.Read( "/Output/Database" );
 
     wxPrintf( "Database version: %s\n", recVerStr );
@@ -233,11 +143,11 @@ int main( int argc, char** argv )
     wxPrintf( "Current folder: [%s]\n", wxGetCwd() );
     wxPrintf( "Configuration File: [%s]\n\n", configName.GetFullPath() );
     wxPrintf( "Initial Database: [%s]\n", initDatabase );
-    wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
-    wxPrintf( "Family index file: [%s]\n", famIdxFile );
+//    wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
+//    wxPrintf( "Family index file: [%s]\n", famIdxFile );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
-    wxPrintf( "Notes folder: [%s]\n", notesFolder );
-    wxPrintf( "Reference file: [%s]\n", refFile );
+//    wxPrintf( "Notes folder: [%s]\n", notesFolder );
+//    wxPrintf( "Reference file: [%s]\n", refFile );
     wxPrintf( "Output file: [%s]\n", outFile );
 
     if( wxFileExists( outFile ) ) {
@@ -259,46 +169,14 @@ int main( int argc, char** argv )
             return EXIT_FAILURE;
         }
     }
-    if( !gedcomFile.empty() ) {
-        wxPrintf( " Done\nImporting GEDCOM " );
-        recGedParse ged( gedcomFile );
-        ged.SetUseXref( true );
-        wxPrintf( "." );
-        unsigned flags = 0;
-        if( !famIdxFile.empty() ) {
-            flags |= recGED_IMPORT_NO_POST_OPS;
-        }
-        if( !gedSourRec ) {
-            flags |= recGED_IMPORT_NO_SOUR_REC;
-        }
-        if( ged.Import( flags ) ) {
-            if( !famIdxFile.empty() ) {
-                wxPrintf( " Done.\nUpdating links " );
-                recDb::Begin();
-                UpdateFamilyLinks( famIdxFile );
-                recDb::Commit();
-                ged.DoPostOperations();
-            }
-            wxPrintf( " Done.\nComplete GEDCOM input " );
-        }
-        wxPrintf( " Done.\nTweak database " );
-        TweakDatabase();
-    }
 
     recDb::Begin();
-    if( !refFile.empty() ) {
-        wxPrintf( " Done.\nInput Ref Breakdown File " );
-        InputRefBreakdownFile( refFile );
-    }
     if( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
         InputRefFiles( refFolder );
     }
-    if( !notesFolder.empty() ) {
-        wxPrintf( " Done.\nInput Individual Note Files " );
-        InputNoteFiles( notesFolder );
-    }
     recDb::Commit();
+
     ret = EXIT_SUCCESS;
     wxPrintf( " Done.\n" );
 
