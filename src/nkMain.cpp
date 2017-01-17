@@ -133,9 +133,7 @@ int main( int argc, char** argv )
     wxFileConfig conf( "", "", configName.GetFullPath(), "", wxCONFIG_USE_LOCAL_FILE );
 
     wxString initDatabase = conf.Read( "/Input/Initial-Database" );
-//    wxString notesFolder_ = conf.Read( "/Input/Notes-Folder" );
     wxString refFolder = conf.Read( "/Input/Ref-Folder" );
-//    wxString refFile = conf.Read( "/Input/Ref-File" );
     wxString outFile = conf.Read( "/Output/Database" );
 
     wxPrintf( "Database version: %s\n", recVerStr );
@@ -143,11 +141,7 @@ int main( int argc, char** argv )
     wxPrintf( "Current folder: [%s]\n", wxGetCwd() );
     wxPrintf( "Configuration File: [%s]\n\n", configName.GetFullPath() );
     wxPrintf( "Initial Database: [%s]\n", initDatabase );
-//    wxPrintf( "GEDCOM file: [%s]\n", gedcomFile );
-//    wxPrintf( "Family index file: [%s]\n", famIdxFile );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
-//    wxPrintf( "Notes folder: [%s]\n", notesFolder );
-//    wxPrintf( "Reference file: [%s]\n", refFile );
     wxPrintf( "Output file: [%s]\n", outFile );
 
     if( wxFileExists( outFile ) ) {
