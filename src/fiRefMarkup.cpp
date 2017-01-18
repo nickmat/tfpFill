@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     22nd February 2015
- * Copyright:   Copyright (c) 2015, Nick Matthews.
+ * Copyright:   Copyright (c) 2015 ~ 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfp_fill is free software: you can redistribute it and/or modify
@@ -42,6 +42,23 @@
 
 #include <rec/recDb.h>
 
+//###########################################################################
+//##===================[ Process RD files with markup ]====================##
+//###########################################################################
+
+void ProcessMarkupRef( idt refID, wxXmlNode* root )
+{
+    const wxString savepoint = recDb::GetSavepointStr();
+    recDb::Savepoint( savepoint );
+
+    fiRefMarkup markup( refID, root );
+    bool ok = markup.create_records();
+    if( ok ) {
+        recDb::ReleaseSavepoint( savepoint );
+    } else {
+        recDb::Rollback( savepoint );
+    }
+}
 
 bool Date_IsOverlap( idt date1ID, idt date2ID )
 {

@@ -86,7 +86,6 @@ int main( int argc, char** argv )
             wxCMD_LINE_VAL_NONE, wxCMD_LINE_OPTION_HELP },
         { wxCMD_LINE_SWITCH, "v", "verbose", "be verbose" },
         { wxCMD_LINE_SWITCH, "q", "quiet",   "be quiet" },
-        { wxCMD_LINE_SWITCH, "t", "test",    "do test and quit" },
         { wxCMD_LINE_PARAM,  NULL, NULL, "command-file",
             wxCMD_LINE_VAL_STRING, wxCMD_LINE_OPTION_MANDATORY },
         { wxCMD_LINE_NONE }
@@ -116,11 +115,6 @@ int main( int argc, char** argv )
     if( parser.Found( "v" ) ) g_verbose = true;
 
     if( ! g_quiet ) wxPrintf( g_title );
-
-
-    if( parser.Found( "t" ) ) {
-        return DoTest( parser.GetParam() );
-    }
 
     wxFileName configName( parser.GetParam() );
     configName.MakeAbsolute();
@@ -213,11 +207,5 @@ wxString CreateCommaList( wxString& first, wxString& second )
     if( second == wxEmptyString ) return first;
     return first + ", " + second;
 }
-
-wxString GetLastWord( const wxString& address )
-{
-    return address.AfterLast( ' ' );
-}
-
 
 // End of nkMain.cpp file 

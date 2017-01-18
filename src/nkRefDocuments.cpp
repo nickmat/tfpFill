@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 2016, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2017, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -170,7 +170,7 @@ void Process1841CensusIndividuals(
     bool samecounty;
     wxString samecountyStr;
     wxString name;
-    wxString county = GetLastWord( address );
+    wxString county = address.AfterLast( ' ' );
     Sex sex;
     wxString occ;
     recEventaPersona ep(0);
@@ -623,11 +623,9 @@ IntRefReturn InterpretRef( idt refID, const wxString& h1Class, const wxString& t
 // If the reference file has markup (body element has id attribute - see rd00393.htm)
 // then is processed by ProcessMarkupRef(...) else is processed by
 // InterpretRef(...) or added to custom list.
-void ProcessRefFile( const wxString path, const wxString name, Filenames& customs )
+void ProcessRefFile( const wxString path, idt refID, Filenames& customs )
 {
-    wxFileName fn( path, name );
-    idt refID;
-    name.Mid( 2 ).ToLongLong( &refID );
+    wxFileName fn( path );
     wxString title;
 
     wxXmlDocument doc;
@@ -677,26 +675,36 @@ bool InputRefFiles( const wxString& refFolder )
     CreateSourceGlobals();
 
     Filenames customs;
-    wxString dirname;
-    wxDir dir;
-    wxString filename;
-    wxString filespec( "rd?????.htm" );
-    for( int i = 1 ; ; i++ ) {
-        wxPrintf( "." );
-        dirname = wxString::Format( "%s\\rd%02d", refFolder, i );
-        if( !dir.Open( dirname ) ) break;
+    wxString rddirname;
 
-        bool cont = dir.GetFirst( &filename, filespec, wxDIR_FILES );
-        while( cont ) {
-            ProcessRefFile( dirname, filename, customs );
-            cont = dir.GetNext( &filename );
+    wxDir dir( refFolder );
+    if( !dir.Open( refFolder ) ) {
+        return false;
+    }
+    bool cont = dir.GetFirst( &rddirname, "rd??", wxDIR_DIRS );
+    while( cont ) {
+        wxPrintf( "." );
+        // Process Directory
+        wxDir rddir;
+        wxString rdfilename;
+        if( !rddir.Open( refFolder + "/" + rddirname ) ) {
+            return false;
         }
+        cont = rddir.GetFirst( &rdfilename, "rd?????.htm", wxDIR_FILES );
+        while( cont ) {
+            idt refID = recGetID( rdfilename.substr( 2 ) );
+            wxString path = refFolder + "/" + rddirname + "/" + rdfilename;
+            ProcessRefFile( path, refID, customs );
+            cont = rddir.GetNext( &rdfilename );
+        }
+        cont = dir.GetNext( &rddirname );
     }
     wxPrintf( "custom" );
     for( size_t i = 0 ; i < customs.size() ; i++ ) {
         wxPrintf( "." );
         ProcessCustomFile( customs[i] );
     }
+
     return true;
 }
 

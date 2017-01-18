@@ -76,5 +76,3 @@ private:
 };
 
 #endif // FILL_FIREFMARKUP_H
-
-// End of fiRefMarkup.cpp file 

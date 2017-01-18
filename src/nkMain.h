@@ -40,13 +40,12 @@ typedef std::vector< wxFileName > Filenames;
 /* nkMain.cpp */
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
-extern wxString GetLastWord( const wxString& address );
 
-/* nkRefBreakdown.cpp */
+/* fiRefMarkup.cpp */
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
 /* nkRefDocuments.cpp */
-extern void ProcessRefFile( const wxString path, const wxString name, Filenames& customs );
+extern void ProcessRefFile( const wxString path, idt refID, Filenames& customs );
 extern bool InputRefFiles( const wxString& refFolder );
 
 /* nkRefDocCustom.cpp */
@@ -100,8 +99,5 @@ extern wxString xmlReadRecLoc( const wxString& str );
 
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, const wxString& href );
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, const wxString& href );
-
-/* nkTest */
-extern int DoTest( const wxString& fname );
 
 #endif // NKMAIN_H
