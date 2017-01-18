@@ -68,7 +68,7 @@ const wxString g_title = PROGNAME " - Version " VERSION VERSION_CONFIG "\n"
 /* Revision history
 
   8jan17  V0.2.0 - Includes all code for creating database from GEDCOM plus others.
-  active  V0.3.0 - Based on adding data from R*.htm files only.
+  active  V0.3.0 - Based on adding data from rd*.htm files only.
 */
 
 bool g_verbose = false;
