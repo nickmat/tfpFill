@@ -630,7 +630,7 @@ void ProcessRefFile( const wxString path, idt refID, Filenames& customs )
 
     wxXmlDocument doc;
     if( !doc.Load( fn.GetFullPath(), "UTF-8", wxXMLDOC_KEEP_WHITESPACE_NODES ) ) {
-        wxPrintf( "\nRef ("ID") filename: [%s]\n\n", refID, fn.GetFullPath() );
+        wxPrintf( "\nRef (" ID ") filename: [%s]\n\n", refID, fn.GetFullPath() );
         return;
     }
 
