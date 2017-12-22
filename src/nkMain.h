@@ -60,7 +60,7 @@ extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID, 
 extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq, const wxString& note = "" );
 extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex );
 extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq );
-extern idt CreateName( const wxString& surname, const wxString& givens );
+extern idt CreateName( const wxString& name, idt style = 0 );
 extern void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names );
 extern idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
@@ -83,6 +83,8 @@ extern bool CreateIndividual( idt indID, idt perID );
 
 extern Sex GetSexFromStr( const wxString& str );
 extern wxString GetConditionStr( Sex sex, const wxString& cond );
+
+extern wxString ProperCase( const wxString& str );
 
 /* nkXmlHelpers.cpp */
 class wxXmlNode;

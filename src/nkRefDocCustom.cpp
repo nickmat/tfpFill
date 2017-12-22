@@ -580,9 +580,6 @@ void Process1051File( wxFileName& fn )
         int state = 0, substate = 0;
         bDateStr = wxEmptyString;
         bool singleParent = true;
-        if( recDate::GetStr( dateID ) == "9 Jan 1831" ) {
-            singleParent = true;
-        }
         while ( tokenizer.HasMoreTokens() )
         {
             token = tokenizer.GetNextToken();
@@ -770,20 +767,20 @@ void Process1051File( wxFileName& fn )
         perParentID = perMotherID = perFatherID = 0;
         wxString surname;
         if( !parent.IsEmpty() ) {
-            parentNameID = recName::CreateName( parent );
+            parentNameID = CreateName( parent );
             surname = recName::GetNamePartStr( parentNameID, NAME_TYPE_Surname );
         } else if( !mother.IsEmpty() ) {
-            motherNameID = recName::CreateName( mother, recNameStyle::NS_Married );
+            motherNameID = CreateName( mother, recNameStyle::NS_Married );
             surname = recName::GetNamePartStr( motherNameID, NAME_TYPE_Surname );
             father << " " << surname;
-            fatherNameID = recName::CreateName( father );
+            fatherNameID = CreateName( father );
             if( !maiden.IsEmpty() ) {
                 mother = recName::GetNamePartStr( motherNameID, NAME_TYPE_Given_name )
                     + " " + maiden;
-                motherMaidenID = recName::CreateName( mother );
+                motherMaidenID = CreateName( mother );
             }
         } else if( !father.IsEmpty() ) {
-            fatherNameID = recName::CreateName( father );
+            fatherNameID = CreateName( father );
             surname = recName::GetNamePartStr( fatherNameID, NAME_TYPE_Surname );
         }
         name << " " << surname;

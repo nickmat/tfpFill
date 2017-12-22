@@ -150,13 +150,20 @@ idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pse
     return name.f_id;
 }
 
-idt CreateName( const wxString& surname, const wxString& givens )
+#if 0
+idt CreateName_( const wxString& surname, const wxString& givens )
 {
     recName name(0);
     name.Save();
     int seq = name.AddNameParts( givens, NAME_TYPE_Given_name );
     name.AddNamePart( surname, NAME_TYPE_Surname, seq );
     return name.f_id;
+}
+#endif
+
+idt CreateName( const wxString& name, idt style )
+{
+    return recName::CreateName_( ProperCase( name ), style );
 }
 
 idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )
@@ -196,7 +203,7 @@ idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* 
     name.FSetPerID( per.FGetID() );
     name.FSetSequence( 1 );
     name.Save();
-    name.AddNameParts( nameStr );
+    name.AddNameParts( ProperCase( nameStr ) );
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
 
     if( indID && !recIndividual::Exists( indID ) ) {
@@ -218,7 +225,7 @@ void AddName( idt refID, idt perID, const wxString& nameStr, int* pseq )
     name.FSetPerID( perID );
     name.SetNextSequence();
     name.Save();
-    name.AddNameParts( nameStr );
+    name.AddNameParts( ProperCase( nameStr ) );
     recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
 }
 
@@ -665,6 +672,26 @@ wxString GetConditionStr( Sex sex, const wxString& cond )
         }
     }
     return str;
+}
+
+wxString ProperCase( const wxString& str )
+{
+    wxString output;
+    bool start = true;
+    for ( auto ch : str ) {
+        if ( ch == ' ' || ch == '.' ) {
+            start = true;
+            output += ' ';
+            continue;
+        }
+        if ( start ) {
+            start = false;
+            output += toupper( ch );
+        } else {
+            output += tolower( ch );
+        }
+    }
+    return output;
 }
 
 // End of nkRefDocuments.cpp file
