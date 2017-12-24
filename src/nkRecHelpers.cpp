@@ -150,20 +150,9 @@ idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pse
     return name.f_id;
 }
 
-#if 0
-idt CreateName_( const wxString& surname, const wxString& givens )
-{
-    recName name(0);
-    name.Save();
-    int seq = name.AddNameParts( givens, NAME_TYPE_Given_name );
-    name.AddNamePart( surname, NAME_TYPE_Surname, seq );
-    return name.f_id;
-}
-#endif
-
 idt CreateName( const wxString& name, idt style )
 {
-    return recName::CreateName_( ProperCase( name ), style );
+    return recName::CreateName( ProperCase( name ), style );
 }
 
 idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )

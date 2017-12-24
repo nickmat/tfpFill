@@ -71,6 +71,31 @@ void ListIndividuals( wxXmlNode* node, recIdVec& list, wxArrayString& names )
         if( node->GetType() == wxXML_ELEMENT_NODE ) {
             if( node->GetName() == "a" ) {
                 wxXmlAttribute* attr = node->GetAttributes();
+                idt indID = 0;
+                wxString name, title;
+                while ( attr ) {
+                    if ( attr->GetName() == "href" ) {
+                        wxString newHref;
+                        idt id;
+                        if ( DecodeHref( attr->GetValue(), &id, &newHref ) ) {
+                            attr->SetValue( newHref );
+                            indID = id;
+                            name = xmlGetAllContent( node );
+                        }
+                    } else if ( attr->GetName() == "title" ) {
+                        title = attr->GetValue();
+                    }
+                    attr = attr->GetNext();
+                }
+                if ( indID > 0 ) {
+                    list.push_back( indID );
+                    if ( title.empty() ) {
+                        names.push_back( name );
+                    } else {
+                        names.push_back( title );
+                    }
+                }
+#if 0
                 while( attr ) {
                     if( attr->GetName() == "href" ) {
                         wxString newHref;
@@ -85,6 +110,7 @@ void ListIndividuals( wxXmlNode* node, recIdVec& list, wxArrayString& names )
                         attr = attr->GetNext();
                     }
                 }
+#endif
             } else {
                 ListIndividuals( node->GetChildren(), list, names );
             }
