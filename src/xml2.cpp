@@ -33,7 +33,7 @@
 #include "wx/scopedptr.h"
 #include "wx/versioninfo.h"
 
-#include "../src/expat/lib/expat.h" // from Expat
+#include "../src/expat/expat/lib/expat.h" // from Expat
 
 // DLL options compatibility check:
 WX_CHECK_BUILD_OPTIONS("wxXML")
