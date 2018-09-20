@@ -95,22 +95,6 @@ void ListIndividuals( wxXmlNode* node, recIdVec& list, wxArrayString& names )
                         names.push_back( title );
                     }
                 }
-#if 0
-                while( attr ) {
-                    if( attr->GetName() == "href" ) {
-                        wxString newHref;
-                        idt id;
-                        if( DecodeHref( attr->GetValue(), &id, &newHref ) ) {
-                            attr->SetValue( newHref );
-                            list.push_back( id );
-                            names.push_back( xmlGetAllContent( node ) );
-                        }
-                        attr = NULL;
-                    } else {
-                        attr = attr->GetNext();
-                    }
-                }
-#endif
             } else {
                 ListIndividuals( node->GetChildren(), list, names );
             }
