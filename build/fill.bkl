@@ -35,6 +35,7 @@
 
     <sources>$(LOCAL_NICK)/dummy.cpp</sources>
     <sources>$(LOCAL_NICK)/fiRefMarkup.cpp</sources>
+    <sources>$(LOCAL_NICK)/fiMedia.cpp</sources>
     <sources>$(LOCAL_NICK)/nkMain.cpp</sources>
     <sources>$(LOCAL_NICK)/nkRecHelpers.cpp</sources>
     <sources>$(LOCAL_NICK)/nkRefDocCustom.cpp</sources>

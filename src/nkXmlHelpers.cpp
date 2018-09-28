@@ -251,4 +251,18 @@ wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, const wxString& hre
     return link;
 }
 
+bool xmlChangeLink( wxXmlNode* node, const wxString& href )
+{
+    if ( node->GetName() != "a" ) {
+        return false;
+    }
+    for ( wxXmlAttribute* attr = node->GetAttributes(); attr; attr->GetNext() ) {
+        if ( attr->GetName() == "href" ) {
+            attr->SetValue( href );
+            return true;
+        }
+    }
+    return false;
+}
+
 // End of nkRefDocuments.cpp file 

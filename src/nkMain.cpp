@@ -50,9 +50,9 @@
 #include <ctime>
 
 
-#define VERSION   "0.3.0"
+#define VERSION   "0.3.1"
 #define PROGNAME  "fill for TFP"
-#define PROGDATE  "2011 - 2016"
+#define PROGDATE  "2011 ~ 2018"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
@@ -68,7 +68,8 @@ const wxString g_title = PROGNAME " - Version " VERSION VERSION_CONFIG "\n"
 /* Revision history
 
   8jan17  V0.2.0 - Includes all code for creating database from GEDCOM plus others.
-  active  V0.3.0 - Based on adding data from rd*.htm files only.
+ 24dec17  V0.3.0 - Based on adding data from rd*.htm files only.
+  active  V0.3.1 - Now adds media (image) files as well.
 */
 
 bool g_verbose = false;
@@ -128,6 +129,7 @@ int main( int argc, char** argv )
 
     wxString initDatabase = conf.Read( "/Input/Initial-Database" );
     wxString refFolder = conf.Read( "/Input/Ref-Folder" );
+    wxString imgFolder = conf.Read( "/Input/Image-Folder" );
     wxString outFile = conf.Read( "/Output/Database" );
 
     wxPrintf( "Database version: %s\n", recVerStr );
@@ -136,6 +138,7 @@ int main( int argc, char** argv )
     wxPrintf( "Configuration File: [%s]\n\n", configName.GetFullPath() );
     wxPrintf( "Initial Database: [%s]\n", initDatabase );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
+    wxPrintf( "Image folder: [%s]\n", imgFolder );
     wxPrintf( "Output file: [%s]\n", outFile );
 
     if( wxFileExists( outFile ) ) {
@@ -159,9 +162,13 @@ int main( int argc, char** argv )
     }
 
     recDb::Begin();
-    if( !refFolder.empty() ) {
+    if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
         InputRefFiles( refFolder );
+    }
+    if ( !imgFolder.empty() ) {
+        wxPrintf( " Done.\nInput Image Files " );
+        InputMediaFiles( imgFolder );
     }
     recDb::Commit();
 

@@ -41,6 +41,9 @@ typedef std::vector< wxFileName > Filenames;
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
 
+/* fiMedia.cpp */
+extern bool InputMediaFiles( const wxString& imgFolder );
+
 /* fiRefMarkup.cpp */
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
@@ -101,5 +104,6 @@ extern wxString xmlReadRecLoc( const wxString& str );
 
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, const wxString& href );
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, const wxString& href );
+extern bool xmlChangeLink( wxXmlNode* node, const wxString& href );
 
 #endif // NKMAIN_H
