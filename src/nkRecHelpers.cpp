@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2018, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -397,11 +397,26 @@ idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq
 
 idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq )
 {
-    recEventa ea(0);
+    recEventa ea( 0 );
     ea.FSetTitle( "Household at " + recPlace::GetAddressStr( placeID ) );
     ea.FSetTypeID( recEventType::ET_Residence );
     ea.FSetDate1ID( dateID );
     ea.FSetPlaceID( placeID );
+    ea.UpdateDatePoint();
+    ea.Save();
+    idt eaID = ea.FGetID();
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Event, eaID, pseq );
+
+    return eaID;
+}
+
+idt CreateMediaEventa( idt refID, int* pseq )
+{
+    recEventa ea( 0 );
+    ea.FSetTitle( recReference::GetTitle( refID ) );
+    ea.FSetTypeID( recEventType::ET_Media );
+    ea.FSetDate1ID( 0 );
+    ea.FSetPlaceID( 0 );
     ea.UpdateDatePoint();
     ea.Save();
     idt eaID = ea.FGetID();
@@ -445,14 +460,14 @@ idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID, int* p
     return e.FGetID();
 }
 
-void AddPersonaToEventa( idt eventID, idt perID, idt roleID )
+void AddPersonaToEventa( idt eaID, idt perID, idt roleID )
 {
-    if( eventID == 0 || perID == 0 ) return;
+    if( eaID == 0 || perID == 0 ) return;
     recEventaPersona ep(0);
-    ep.f_eventa_id = eventID;
+    ep.f_eventa_id = eaID;
     ep.f_per_id = perID;
     ep.f_role_id = roleID;
-    ep.f_per_seq = recEventa::GetLastPerSeqNumber( eventID ) + 1;
+    ep.f_per_seq = recEventa::GetLastPerSeqNumber( eaID ) + 1;
     ep.Save();
 }
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq )

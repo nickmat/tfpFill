@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2018, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -73,8 +73,9 @@ extern idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID, int
 extern idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
 extern idt CreateResidenceEventa( idt dateID, idt placeID, idt refID, int* pseq );
+extern idt CreateMediaEventa( idt refID, int* pseq );
 extern idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID, int* pseq );
-extern void AddPersonaToEventa( idt eventID, idt perID, idt roleID );
+extern void AddPersonaToEventa( idt eaID, idt perID, idt roleID );
 extern idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID, int* pseq );
 extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );

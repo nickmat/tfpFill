@@ -83,14 +83,30 @@ wxString GetImageTextFileName( long entry, const wxString& imgFolder )
     return wxString::Format( "%s/im01a/im%05ld.txt", imgFolder, entry );
 }
 
-void CreatePersonas( recReference& ref )
+wxString FindTitle( const wxString& note, const wxString& imStr )
+{
+    size_t pos = note.find( "#Photo" );
+    if ( pos == wxString::npos ) {
+        return "";
+    }
+    pos = note.find( imStr, pos );
+    if ( pos == wxString::npos ) {
+        return "";
+    }
+    pos += imStr.size() + 1;
+    size_t pos2 = note.find( '\n', pos );
+    return note.substr( pos, pos2 - pos );
+}
+
+idt CreateMediaEvent( recReference& ref )
 {
     idt refID = ref.FGetID();
+    int seq = 0;
+    idt eaID = CreateMediaEventa( refID, &seq );
     wxStringInputStream statement( ref.FGetStatement() );
     wxXmlDocument doc( statement );
     wxXmlNode* node = doc.GetRoot();
     idt indID;
-    int seq = 0;
     wxString indIdStr;
     std::vector<wxXmlNode*> level;
     while(node ){
@@ -102,6 +118,7 @@ void CreatePersonas( recReference& ref )
                 recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, namID, &seq );
                 Sex sex = recIndividual::GetSex( indID );
                 idt perID = CreatePersona( refID, indID, namID, sex );
+                AddPersonaToEventa( eaID, perID, recEventTypeRole::ROLE_Media_Subject );
             }
         }
         wxXmlNode* next = node->GetChildren();
@@ -121,6 +138,7 @@ void CreatePersonas( recReference& ref )
     doc.Save( sos, wxXML_NO_INDENTATION, wxXMLDOC_SAVE_NONE );
     ref.FSetStatement( sos.GetString() );
     ref.Save();
+    return CreateEventFromEventa( eaID );
 }
 
 void CreateImage( long entry, idt galID, const wxString&  imgFolder )
@@ -150,7 +168,7 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     imgBuff.UngetAppendBuf( iRead );
 
     recReference ref( 0 );
-    ref.FSetTitle( "Image of " + title );
+    ref.FSetTitle( "Photo of " + title );
     ref.FSetStatement( "<!-- HTML -->\n<div class='img-text'>\n" + content + "</div>\n" );
     ref.FSetUserRef( "Im" + recGetStr( entry ) );
     ref.Save();
@@ -172,7 +190,13 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     gm.SetNextMedSequence( galID );
     gm.Save();
 
-    CreatePersonas( ref );
+    idt eveID = CreateMediaEvent( ref );
+
+    for ( auto ie : recEvent::GetIndividualEvents( eveID ) ) {
+        recIndividual ind( ie.FGetIndID() );
+        ie.FSetNote( FindTitle( ind.FGetNote(), ref.FGetUserRef() ) );
+        ie.Save();
+    }
 }
 
 void ProcessImages( idt galID, const wxString& imgFolder, wxXmlNode* node )
