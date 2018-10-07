@@ -152,12 +152,14 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
 
     size_t pos = text.find( ' ' );
     assert( pos != wxString::npos );
-    pos = text.find( ' ', pos + 1 );    // Title starts after the 1st two spaces.
+    pos = text.find( ' ', pos + 1 ) + 1;    // Title starts after the 1st two spaces.
     size_t pos2 = text.find( '\n' ); // And ends at the first new line.
     assert( pos != wxString::npos && pos2 != wxString::npos && pos < pos2 );
     wxString title = text.substr( pos, pos2 - pos );
-    pos = text.find( '\0' );
-    wxString content = text.substr( pos2 + 2, pos - pos2 - 2 );
+    pos = pos2 + 2;
+    pos2 = text.find( '\0' );
+    assert( pos < pos2 );
+    wxString content = text.substr( pos, pos2 - pos );
 
     wxFileName imgfilename( GetImageFileName( entry, imgFolder ) );
     wxMemoryBuffer imgBuff;
@@ -175,12 +177,13 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
 
     recMediaData md( 0 );
     md.FSetData( imgBuff );
+    md.FSetFile( "image/" + ref.FGetUserRef() );
     md.Save();
 
     recMedia med( 0 );
+    med.FSetTitle( title );
     med.FSetDataID( md.FGetID() );
     med.FSetRefID( ref.FGetID() );
-    med.FSetTitle( title );
     med.Save();
 
     recGalleryMedia gm( 0 );
