@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2017, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 - 2018, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -270,7 +270,7 @@ void Process161File( wxFileName& fn )
         str = line.Mid( 43, c161[block].distL ).Trim() + " (RD)";
         placeID = CreatePlace( str, ref.f_id, &seq );
 
-        rEveID = CreateRegBirthEvent( ref.f_id, perID, rDateID, placeID, &seq );
+        rEveID = CreateRegBirthEvent( ref.f_id, perID, rDateID, placeID );
 
         if( block < 1 ) {
             str = GetDateStrQuarterPlus( year, quarter );
@@ -278,7 +278,7 @@ void Process161File( wxFileName& fn )
             str = GetDateStrMonthPlus( year, month );
         }
         bDateID = CreateDate( str, ref.f_id, &seq );
-        bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, placeID, &seq );
+        bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, placeID );
 
         str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
         if( !str.empty() ) {
@@ -403,7 +403,7 @@ void Process162File( wxFileName& fn )
         placeID = CreatePlace( str, ref.f_id, &seq );
 
         recEventTypeRole::Role role = recEventTypeRole::ROLE_Marriage_Spouse;
-        eveID = CreateMarriageEvent( perID, dateID, placeID, role, ref.f_id, &seq );
+        eveID = CreateMarriageEvent( perID, dateID, placeID, role, ref.f_id );
 
         if( block > 0 ) {
             str = line.Mid( c162[block].mothB, c162[block].mothL ).Trim();
@@ -479,7 +479,7 @@ void Process163File( wxFileName& fn )
         str = line.Mid( c163[block].distB, c163[block].distL ).Trim() + " (RD)";
         placeID = CreatePlace( str, ref.f_id, &seq );
 
-        rEveID = CreateRegDeathEvent( ref.f_id, perID, rDateID, placeID, &seq );
+        rEveID = CreateRegDeathEvent( ref.f_id, perID, rDateID, placeID );
 
         if( block < 2 ) {
             str = GetDateStrQuarterPlus( year, quarter );
@@ -487,7 +487,7 @@ void Process163File( wxFileName& fn )
             str = GetDateStrMonthPlus( year, month );
         }
         dDateID = CreateDate( str, ref.f_id, &seq );
-        dEveID = CreateDeathEventa( ref.f_id, perID, dDateID, placeID, &seq );
+        dEveID = CreateDeathEventa( ref.f_id, perID, dDateID, placeID );
         LinkOrCreateEventFromEventa( dEveID );
 
         if( block == 0 ) {  // This block may state age
@@ -496,7 +496,7 @@ void Process163File( wxFileName& fn )
                 long age;
                 str.ToLong( &age );
                 bDateID = CreateDateFromAge( age, dDateID, ref.f_id, &seq );
-                CreateBirthEvent( ref.f_id, perID, bDateID, 0, &seq );
+                CreateBirthEvent( ref.f_id, perID, bDateID, 0 );
             }
         }
 
@@ -507,7 +507,7 @@ void Process163File( wxFileName& fn )
             if( !line.Mid( 52, 2 ).ToLong( &d ) ) d = 0;
             str = GetDateStrDay( y, m, d );
             bDateID = CreateDate( str, ref.f_id, &seq );
-            CreateBirthEvent( ref.f_id, perID, bDateID, 0, &seq );
+            CreateBirthEvent( ref.f_id, perID, bDateID, 0 );
         }
 
         ref.f_title << year << " GRO Death Index for " << recPersona::GetNameStr( perID );
@@ -788,17 +788,17 @@ void Process1051File( wxFileName& fn )
         if( !name1st.IsEmpty() ) {
             name1st << " " << surname;
             per1stID = CreatePersona( ref.f_id, ind1stID, name1st, sex, &seq );
-            cEve1stID = CreateChrisEventa( ref.f_id, per1stID, dateID, placeID, &seq );
+            cEve1stID = CreateChrisEventa( ref.f_id, per1stID, dateID, placeID );
         } else {
             cEve1stID = 0;
         }
         perID = CreatePersona( ref.f_id, indID, name, sex, &seq ); 
-        cEveID = CreateChrisEventa( ref.f_id, perID, dateID, placeID, &seq );
+        cEveID = CreateChrisEventa( ref.f_id, perID, dateID, placeID );
 
         if( !bDateStr.IsEmpty() ) {
             // We have a birth event
             bDateID = CreateDate( bDateStr, ref.f_id, &seq );
-            bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, 0, &seq );
+            bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, 0 );
         }
 
         if( parentNameID ) {
@@ -860,7 +860,7 @@ void Process1051File( wxFileName& fn )
 
         if( TidyStr( &residence ) ) {
             rPlaceID = CreatePlace( residence, ref.f_id, &seq );
-            rEveID = CreateResidenceEventa( dateID, rPlaceID, ref.f_id, &seq );
+            rEveID = CreateResidenceEventa( dateID, rPlaceID, ref.f_id );
             if( perParentID ) {
                 AddPersonaToEventa( rEveID, perParentID, recEventTypeRole::ROLE_Residence_Family );
             }

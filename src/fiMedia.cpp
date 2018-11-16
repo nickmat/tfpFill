@@ -102,7 +102,7 @@ idt CreateMediaEvent( recReference& ref )
 {
     idt refID = ref.FGetID();
     int seq = 0;
-    idt eaID = CreateMediaEventa( refID, &seq );
+    idt eaID = CreateMediaEventa( refID );
     wxStringInputStream statement( ref.FGetStatement() );
     wxXmlDocument doc( statement );
     wxXmlNode* node = doc.GetRoot();

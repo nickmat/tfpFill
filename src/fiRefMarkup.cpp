@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     22nd February 2015
- * Copyright:   Copyright (c) 2015 ~ 2017, Nick Matthews.
+ * Copyright:   Copyright (c) 2015 ~ 2018, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfp_fill is free software: you can redistribute it and/or modify
@@ -649,6 +649,7 @@ idt fiRefMarkup::create_eventa_rec( const wxString& str )
     }
 
     recEventa ea(0);
+    ea.FSetRefID( m_referenceID );
     ea.FSetTypeID( etypeID );
     ea.FSetDate1ID( m_cur_date );
     ea.FSetPlaceID( m_cur_place );
@@ -656,9 +657,6 @@ idt fiRefMarkup::create_eventa_rec( const wxString& str )
     ea.UpdateDatePoint();
     ea.Save();
     m_cur_eventa = ea.FGetID();
-
-    recReferenceEntity::Create(
-        m_referenceID, recReferenceEntity::TYPE_Event, m_cur_eventa );
 
     create_eventa_per_rec( tail );
 
