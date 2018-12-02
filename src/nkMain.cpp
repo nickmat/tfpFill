@@ -162,6 +162,7 @@ int main( int argc, char** argv )
     }
 
     recDb::Begin();
+#if 1
     if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
         InputRefFiles( refFolder );
@@ -170,6 +171,12 @@ int main( int argc, char** argv )
         wxPrintf( " Done.\nInput Image Files " );
         InputMediaFiles( imgFolder );
     }
+
+#else
+    Filenames customs;
+    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
+#endif
+
     recDb::Commit();
 
     ret = EXIT_SUCCESS;
@@ -184,12 +191,24 @@ int main( int argc, char** argv )
     return ret;
 }
 
+recEntity DecodeOldHref( const wxString & href )
+{
+    recEntity ent = recENT_NULL;
+    wxString start = href.Mid( 0, 5 );
+    if ( start == "../ps" ) {
+        ent = recENT_Individual;
+    } else if ( start == "../wc" ) {
+        ent = recENT_Family;
+    }
+    return ent;
+}
+
 bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr )
 {
     long dir, fnum, id; 
     // Old Individual href format = "../ps01/ps01_016.htm"
     // TFP format is "tfp:I16"
-    if( href.Mid( 0, 5 ) == "tfp:I" ) { 
+    if( href.Mid( 0, 4 ) == "tfp:" ) { 
         // Already converted.
         if( !href.Mid( 5 ).ToLong( &id ) ) return false;
     } else {

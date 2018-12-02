@@ -30,14 +30,14 @@
 
 #include <wx/filename.h>
 
-#include <rec/recDatabase.h>
-#include <rec/recDate.h>
+#include <rec/recDb.h>
 
 class wxXmlNode;
 typedef std::vector< wxFileName > Filenames;
 
 
 /* nkMain.cpp */
+extern recEntity DecodeOldHref( const wxString& href );
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
 
@@ -56,14 +56,15 @@ extern void ProcessCustomFile( wxFileName& fn );
 
 /* nkRecHelpers.cpp */
 extern bool ExportGedcom( const wxString& path );
-extern idt CreateDate( const wxString& date, idt refID, int* pseq );
-extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq );
+extern idt CreateDate( const wxString& date, idt refID, int* pseq = nullptr );
+extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq = nullptr );
 extern idt CreatePlace( const wxString& address, idt refID, int* pseq = NULL );
 extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID );
-extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* pseq, const wxString& note = "" );
-extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex );
-extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq );
+extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex = SEX_Unstated, int* pseq = nullptr, const wxString& note = "" );
+extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex = SEX_Unstated );
+extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq = nullptr );
 extern idt CreateName( const wxString& name, idt style = 0 );
+extern idt CreatePerName( const wxString& name, idt perID, idt style = 0 );
 extern void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names );
 extern idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID );
 extern idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID );
@@ -75,10 +76,10 @@ extern idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID );
 extern idt CreateResidenceEventa( idt dateID, idt placeID, idt refID );
 extern idt CreateMediaEventa( idt refID );
 extern idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID );
-extern void AddPersonaToEventa( idt eaID, idt perID, idt roleID );
+extern void AddPersonaToEventa( idt eaID, idt perID, idt roleID, const wxString& note = "" );
 extern idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID );
 extern idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID );
-extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq );
+extern idt CreateRelationship( idt per1ID, const wxString& des, idt per2ID, idt refID, int* pseq = nullptr );
 extern void rSetPersonaSex( idt perID, Sex sex );
 extern void rAddNameToPersona( idt perID, idt nameID );
 extern idt LinkOrCreateEventFromEventa( idt eaID );
@@ -99,12 +100,17 @@ extern wxXmlNode* xmlGetFirst( wxXmlNode* node, const wxString& tag );
 extern wxXmlNode* xmlGetNext( wxXmlNode* node, const wxString& tag );
 extern wxXmlNode* xmlGetChild( wxXmlNode* node );
 extern wxXmlNode* xmlGetFirstChild( wxXmlNode* node, const wxString& tag );
-extern idt GetIndividualAnchor( wxXmlNode* node, wxString* name );
+extern wxXmlNode* xmlGetFirstTag( wxXmlNode* node, const wxString& tag );
+extern wxXmlNode* xmlGetNextTag( wxXmlNode* node, const wxString& tag );
+extern idt GetIndividualAnchor( wxXmlNode* node, wxString* name, wxXmlNode** aNode );
 
 extern wxString xmlReadRecLoc( const wxString& str );
 
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, const wxString& href );
 extern wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, const wxString& href );
 extern bool xmlChangeLink( wxXmlNode* node, const wxString& href );
+extern wxXmlNode* xmlCreateLink( wxXmlNode* node, recEntity entity, idt id );
+extern wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, recEntity entity, idt id );
+extern bool xmlChangeLink( wxXmlNode* node, recEntity entity, idt id );
 
 #endif // NKMAIN_H

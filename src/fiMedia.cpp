@@ -101,24 +101,25 @@ wxString FindTitle( const wxString& note, const wxString& imStr )
 idt CreateMediaEvent( recReference& ref )
 {
     idt refID = ref.FGetID();
-    int seq = 0;
     idt eaID = CreateMediaEventa( refID );
+
     wxStringInputStream statement( ref.FGetStatement() );
     wxXmlDocument doc( statement );
     wxXmlNode* node = doc.GetRoot();
     idt indID;
-    wxString indIdStr;
+    int seq = 0;
     std::vector<wxXmlNode*> level;
     while(node ){
         if ( node->GetName() == "a" ) {
             wxString href = node->GetAttribute( "href" );
-            if ( DecodeHref( href, &indID, &indIdStr ) ) {
-                xmlChangeLink( node, indIdStr );
+            if ( DecodeHref( href, &indID, nullptr ) ) {
                 idt namID = CreateName( xmlGetAllContent( node ) );
                 recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, namID, &seq );
                 Sex sex = recIndividual::GetSex( indID );
                 idt perID = CreatePersona( refID, indID, namID, sex );
                 AddPersonaToEventa( eaID, perID, recEventTypeRole::ROLE_Media_Subject );
+                wxString perIdStr = wxString::Format( "tfpr:Pa" ID, perID );
+                xmlChangeLink( node, perIdStr );
             }
         }
         wxXmlNode* next = node->GetChildren();
@@ -174,6 +175,7 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     ref.FSetStatement( "<!-- HTML -->\n<div class='img-text'>\n" + content + "</div>\n" );
     ref.FSetUserRef( "Im" + recGetStr( entry ) );
     ref.Save();
+    idt eveID = CreateMediaEvent( ref );
 
     recMediaData md( 0 );
     md.FSetData( imgBuff );
@@ -182,6 +184,7 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
 
     recMedia med( 0 );
     med.FSetTitle( title );
+    med.FSetNote( ref.FGetStatement() );
     med.FSetDataID( md.FGetID() );
     med.FSetRefID( ref.FGetID() );
     med.Save();
@@ -192,8 +195,6 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     gm.FSetMedID( med.FGetID() );
     gm.SetNextMedSequence( galID );
     gm.Save();
-
-    idt eveID = CreateMediaEvent( ref );
 
     for ( auto ie : recEvent::GetIndividualEvents( eveID ) ) {
         recIndividual ind( ie.FGetIndID() );

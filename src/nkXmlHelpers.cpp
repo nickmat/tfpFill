@@ -130,22 +130,65 @@ wxXmlNode* xmlGetFirstChild( wxXmlNode* node, const wxString& tag )
     return xmlGetFirst( xmlGetChild( node ), tag );
 }
 
-idt GetIndividualAnchor( wxXmlNode* node, wxString* name )
+wxXmlNode* xmlGetFirstTag( wxXmlNode* node, const wxString & tag )
 {
-    while( node ) {
-        if( node->GetType() == wxXML_ELEMENT_NODE ) {
-            if( node->GetName() == "a" ) {
+    if ( node->GetType() == wxXML_ELEMENT_NODE && node->GetName() == tag ) {
+        return node;
+    }
+    return xmlGetNextTag( node, tag );
+}
+
+wxXmlNode* xmlGetNextTag( wxXmlNode* node, const wxString& tag )
+{
+    wxXmlNode* next = node->GetChildren();
+    next = xmlGetFirstTag( next, tag );
+    if ( next ) {
+        return next;
+    }
+    for ( ;; ) {
+        next = node->GetNext();
+        if ( next == 0 ) {
+            break;
+        }
+        next = xmlGetFirstTag( next, tag );
+        if ( next ) {
+            return next;
+        }
+    }
+    
+
+
+
+    while ( node ) {
+        if ( node->GetType() == wxXML_ELEMENT_NODE ) {
+            if ( node->GetName() == tag ) {
+                return node;
+            } else {
+                return xmlGetNextTag( node->GetChildren(), tag );
+            }
+        }
+        node = node->GetNext();
+    }
+    return 0;
+}
+
+idt GetIndividualAnchor( wxXmlNode* node, wxString* name, wxXmlNode** aNode )
+{
+    while ( node ) {
+        if ( node->GetType() == wxXML_ELEMENT_NODE ) {
+            if ( node->GetName() == "a" ) {
+                *aNode = node;
                 wxString href = node->GetAttribute( "href" );
                 idt id;
-                if( DecodeHref( href, &id, NULL ) ) {
+                if ( DecodeHref( href, &id, NULL ) ) {
                     *name = xmlGetAllContent( node );
                 }
                 return id;
             } else {
-                return GetIndividualAnchor( node->GetChildren(), name );
+                return GetIndividualAnchor( node->GetChildren(), name, aNode );
             }
         }
-       node = node->GetNext();
+        node = node->GetNext();
     }
     return 0;
 }
@@ -263,6 +306,62 @@ bool xmlChangeLink( wxXmlNode* node, const wxString& href )
         }
     }
     return false;
+}
+
+wxString xmlCreateHref( recEntity entity, idt id )
+{
+    wxString href;
+    if ( id == 0 ) {
+        return href;
+    }
+    switch ( entity )
+    {
+    case recENT_Persona:
+        href = "tfpr:Pa";
+        break;
+    case recENT_Eventa:
+        href = "tfpr:Ea";
+        break;
+    case recENT_Name:
+        href = "tfpi:N";
+        break;
+    case recENT_Date:
+        href = "tfpi:D";
+        break;
+    case recENT_Place:
+        href = "tfpi:P";
+        break;
+    default:
+        return href;
+    }
+    return href + recGetStr( id );
+}
+
+wxXmlNode* xmlCreateLink( wxXmlNode* node, recEntity entity, idt id )
+{
+    wxString href = xmlCreateHref( entity, id );
+    if ( href.empty() ) {
+        return node;
+    }
+    return xmlCreateLink( node, href );
+}
+
+wxXmlNode* xmlCreateLink( wxXmlNode* node, int beg, int end, recEntity entity, idt id )
+{
+    wxString href = xmlCreateHref( entity, id );
+    if ( href.empty() ) {
+        return node;
+    }
+    return xmlCreateLink( node, beg, end, href );
+}
+
+bool xmlChangeLink( wxXmlNode* node, recEntity entity, idt id )
+{
+    wxString href = xmlCreateHref( entity, id );
+    if ( href.empty() ) {
+        return false;
+    }
+    return xmlChangeLink( node, href );
 }
 
 // End of nkRefDocuments.cpp file 

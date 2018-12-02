@@ -155,6 +155,21 @@ idt CreateName( const wxString& name, idt style )
     return recName::CreateName( ProperCase( name ), style );
 }
 
+idt CreatePerName( const wxString & nameStr, idt perID, idt style )
+{
+    if ( perID == 0 ) {
+        return 0;
+    }
+    recName name( 0 );
+    name.FSetPerID( perID );
+    name.FSetTypeID( style );
+    name.SetNextSequence();
+    name.Save();
+
+    name.AddNameParts( ProperCase( nameStr ) );
+    return name.FGetID();
+}
+
 idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )
 {
     recPersona per(0);
@@ -193,7 +208,7 @@ idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* 
     name.FSetSequence( 1 );
     name.Save();
     name.AddNameParts( ProperCase( nameStr ) );
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id );
 
     if( indID && !recIndividual::Exists( indID ) ) {
         CreateIndividual( indID, per.FGetID() );
@@ -459,16 +474,18 @@ idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID )
     return e.FGetID();
 }
 
-void AddPersonaToEventa( idt eaID, idt perID, idt roleID )
+void AddPersonaToEventa( idt eaID, idt perID, idt roleID, const wxString& note )
 {
     if( eaID == 0 || perID == 0 ) return;
     recEventaPersona ep(0);
-    ep.f_eventa_id = eaID;
-    ep.f_per_id = perID;
-    ep.f_role_id = roleID;
-    ep.f_per_seq = recEventa::GetLastPerSeqNumber( eaID ) + 1;
+    ep.FSetRoleID( roleID );
+    ep.FSetEventaID( eaID );
+    ep.FSetPerID( perID );
+    ep.FSetNote( note );
+    ep.SetNextPerSequence( eaID );
     ep.Save();
 }
+
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
 {
     if( occ.empty() ) return 0;
