@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2019, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -35,6 +35,12 @@
 class wxXmlNode;
 typedef std::vector< wxFileName > Filenames;
 
+struct Media {
+    idt ref;
+    wxString filename;
+    wxString text;
+};
+typedef std::vector< Media > MediaVec;
 
 /* nkMain.cpp */
 extern recEntity DecodeOldHref( const wxString& href );
@@ -43,13 +49,14 @@ extern wxString CreateCommaList( wxString& first, wxString& second );
 
 /* fiMedia.cpp */
 extern bool InputMediaFiles( const wxString& imgFolder );
+extern bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, const MediaVec& media );
 
 /* fiRefMarkup.cpp */
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
 /* nkRefDocuments.cpp */
 extern void ProcessRefFile( const wxString path, idt refID, Filenames& customs );
-extern bool InputRefFiles( const wxString& refFolder );
+extern bool InputRefFiles( const wxString& refFolder, MediaVec& media );
 
 /* nkRefDocCustom.cpp */
 extern void ProcessCustomFile( wxFileName& fn );

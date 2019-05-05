@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2017, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2019, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -131,6 +131,7 @@ int main( int argc, char** argv )
     wxString refFolder = conf.Read( "/Input/Ref-Folder" );
     wxString imgFolder = conf.Read( "/Input/Image-Folder" );
     wxString outFile = conf.Read( "/Output/Database" );
+    wxString outMediaFile = conf.Read( "/Output/Media" );
 
     wxPrintf( "Database version: %s\n", recVerStr );
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
@@ -139,7 +140,8 @@ int main( int argc, char** argv )
     wxPrintf( "Initial Database: [%s]\n", initDatabase );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
     wxPrintf( "Image folder: [%s]\n", imgFolder );
-    wxPrintf( "Output file: [%s]\n", outFile );
+    wxPrintf( "Output database file: [%s]\n", outFile );
+    wxPrintf( "Media database file: [%s]\n", outMediaFile );
 
     if( wxFileExists( outFile ) ) {
         wxRemoveFile( outFile );
@@ -154,8 +156,25 @@ int main( int argc, char** argv )
         }
     } else {
         wxPrintf( "\nCreating database" );
-        if( recDb::CreateDb( outFile, 0 ) ) {
+        if( recDb::CreateDbFile( outFile, recDb::DT_Full ) != recDb::CR_OK ) {
             wxPrintf( "\nCan't create Database.\n" );
+            recUninitialize();
+            return EXIT_FAILURE;
+        }
+    }
+
+    if ( wxFileExists( outMediaFile ) ) {
+        wxRemoveFile( outMediaFile );
+    }
+    if ( !outMediaFile.empty() ) {
+        wxPrintf( "\nCreating media database" );
+        if ( recDb::CreateDbFile( outMediaFile, recDb::DT_MediaOnly ) != recDb::CR_OK ) {
+            wxPrintf( "\nCan't Create Media Database.\n" );
+            recUninitialize();
+            return EXIT_FAILURE;
+        }
+        if ( !recDb::AttachDb( outMediaFile, "Media" ) ) {
+            wxPrintf( "\nCan't Attach Media Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
         }
@@ -163,13 +182,18 @@ int main( int argc, char** argv )
 
     recDb::Begin();
 #if 1
+    MediaVec media;
     if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
-        InputRefFiles( refFolder );
+        InputRefFiles( refFolder, media );
     }
     if ( !imgFolder.empty() ) {
         wxPrintf( " Done.\nInput Image Files " );
         InputMediaFiles( imgFolder );
+    }
+    if ( !outMediaFile.empty() ) {
+        wxPrintf( " Done.\nCreate Media Database " );
+        OutputMediaDatabase( outMediaFile, refFolder, media );
     }
 
 #else

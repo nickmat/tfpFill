@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     25th September 2018
- * Copyright:   Copyright (c) 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2018 ~ 2019, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -260,33 +260,46 @@ bool InputMediaFiles( const wxString& imgFolder )
             ProcessGalleries( imgFolder, node );
         }
     }
+    return true;
+}
 
-#if 0
-    wxString imdirname;
+bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, const MediaVec& media_vec )
+{
+    wxFileName path( filename );
+    path.ClearExt();
 
-    wxDir dir( imgFolder );
-    if ( !dir.Open( imgFolder ) ) {
-        return false;
+    recAssociate ass( 0 );
+    ass.FSetPath( path.GetFullName() );
+    ass.Save();
+    idt assID = ass.FGetID();
+    wxASSERT( assID == 1 );
+
+    wxString medFolder( refFolder + "/or/" );
+    for ( auto media : media_vec ) {
+        wxFileName imgfilename( medFolder + media.filename );
+        wxMemoryBuffer imgBuff;
+        wxFile infile( imgfilename.GetFullPath() );
+        wxFileOffset fLen = infile.Length();
+        void* tmp = imgBuff.GetAppendBuf( fLen );
+        size_t iRead = infile.Read( tmp, fLen );
+        imgBuff.UngetAppendBuf( iRead );
+
+        wxFileName fname( "or/" + media.filename );
+        wxASSERT( fname.GetExt() == "jpg" );
+        fname.ClearExt();
+        recMediaData md( 0 );
+        md.FSetData( imgBuff );
+        md.FSetFile( fname.GetFullPath( wxPATH_UNIX ) );
+        md.Save( "Media" );
+        idt mdID = md.FGetID();
+
+        recMedia med( 0 );
+        med.FSetAssID( 1 );
+        med.FSetDataID( mdID );
+        med.FSetRefID( media.ref );
+        med.FSetTitle( recReference::GetTitle( media.ref ) + " " + media.text );
+        med.Save();
     }
-    bool cont = dir.GetFirst( &imdirname, "im???", wxDIR_DIRS );
-    while ( cont ) {
-        wxPrintf( "." );
-        // Process Directory
-        wxDir imdir;
-        wxString imfilename;
-        if ( !imdir.Open( imgFolder + "/" + imdirname ) ) {
-            return false;
-        }
-        cont = imdir.GetFirst( &imfilename, "im?????.txt", wxDIR_FILES );
-        while ( cont ) {
-            idt imgID = recGetID( imfilename.substr( 2 ) );
-            wxString path = imgFolder + "/" + imdirname + "/" + imfilename;
-            ProcessImgFile( path, imgID );
-            cont = imdir.GetNext( &imfilename );
-        }
-        cont = dir.GetNext( &imfilename );
-    }
-#endif
     return true;
 }
 

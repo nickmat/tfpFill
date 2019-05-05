@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2019, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -695,10 +695,25 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
     return INTREF_Done;
 }
 
+void AddToMediaList( idt refID, wxXmlNode* node, MediaVec& media )
+{
+    Media m;
+    m.ref = refID;
+    for ( wxXmlNode* child = node->GetChildren(); child; child = child->GetNext() ) {
+        if ( child->GetName() != "a" ) continue;
+        wxString href = child->GetAttribute( "href" );
+        if ( href.StartsWith( "../or/", &m.filename ) ) {
+            m.text = xmlGetAllContent( child );
+            media.push_back( m );
+        }
+    }
+}
+
+
 // If the reference file has markup (body element has id attribute - see rd00393.htm)
 // then is processed by ProcessMarkupRef(...) else is processed by
 // InterpretRef(...) or added to custom list.
-void ProcessRefFile( const wxString path, idt refID, Filenames& customs )
+void ProcessRefFile( const wxString path, idt refID, Filenames& customs, MediaVec& media )
 {
     wxFileName fn( path );
     wxString title;
@@ -739,6 +754,8 @@ void ProcessRefFile( const wxString path, idt refID, Filenames& customs )
                 refNode = child;
                 break;
             }
+        } else if ( child->GetName() == "span" && child->GetAttribute( "class" ) == "hmenu orig" ) {
+            AddToMediaList( refID, child, media );
         }
         child = child->GetNext();
     }
@@ -754,7 +771,7 @@ void ProcessRefFile( const wxString path, idt refID, Filenames& customs )
     }
 }
 
-bool InputRefFiles( const wxString& refFolder )
+bool InputRefFiles( const wxString& refFolder, MediaVec& media )
 {
     CreateSourceGlobals();
 
@@ -778,7 +795,7 @@ bool InputRefFiles( const wxString& refFolder )
         while( cont ) {
             idt refID = recGetID( rdfilename.substr( 2 ) );
             wxString path = refFolder + "/" + rddirname + "/" + rdfilename;
-            ProcessRefFile( path, refID, customs );
+            ProcessRefFile( path, refID, customs, media );
             cont = rddir.GetNext( &rdfilename );
         }
         cont = dir.GetNext( &rddirname );
