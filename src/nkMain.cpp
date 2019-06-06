@@ -149,7 +149,7 @@ int main( int argc, char** argv )
     if( wxFileExists( initDatabase ) ) {
         wxPrintf( "\nCopying intitial database" );
         wxCopyFile( initDatabase, outFile );
-        if( !recDb::OpenDb( outFile ) ) {
+        if( recDb::OpenDb( outFile ) != recDb::DT_Full ) {
             wxPrintf( "\nCan't open Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
