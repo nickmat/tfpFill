@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2019, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 .. 2021, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -149,14 +149,14 @@ int main( int argc, char** argv )
     if( wxFileExists( initDatabase ) ) {
         wxPrintf( "\nCopying intitial database" );
         wxCopyFile( initDatabase, outFile );
-        if( recDb::OpenDb( outFile ) != recDb::DT_Full ) {
+        if( recDb::OpenDb( outFile ) != recDb::DbType::full ) {
             wxPrintf( "\nCan't open Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
         }
     } else {
         wxPrintf( "\nCreating database" );
-        if( recDb::CreateDbFile( outFile, recDb::DT_Full ) != recDb::CR_OK ) {
+        if( recDb::CreateDbFile( outFile, recDb::DbType::full ) != recDb::CreateReturn::OK ) {
             wxPrintf( "\nCan't create Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
@@ -168,7 +168,7 @@ int main( int argc, char** argv )
     }
     if ( !outMediaFile.empty() ) {
         wxPrintf( "\nCreating media database" );
-        if ( recDb::CreateDbFile( outMediaFile, recDb::DT_MediaOnly ) != recDb::CR_OK ) {
+        if ( recDb::CreateDbFile( outMediaFile, recDb::DbType::media_data_only ) != recDb::CreateReturn::OK ) {
             wxPrintf( "\nCan't Create Media Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
