@@ -133,7 +133,7 @@ int main( int argc, char** argv )
     wxString outFile = conf.Read( "/Output/Database" );
     wxString outMediaFile = conf.Read( "/Output/Media" );
 
-    wxPrintf( "Database version: %s\n", recVerStr );
+    wxPrintf( "Database version: %s\n", recFullVersion );
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
     wxPrintf( "Current folder: [%s]\n", wxGetCwd() );
     wxPrintf( "Configuration File: [%s]\n\n", configName.GetFullPath() );
