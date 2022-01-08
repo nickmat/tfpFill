@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 - 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2011..2022, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -288,10 +288,10 @@ void Process161File( wxFileName& fn )
                 indMotherID = fams[0].FGetWifeID();
             }
             perMotherID = CreatePersona( ref.f_id, indMotherID, "? "+str, SEX_Female, &seq, "Mother" );
-            rDatePt = recDate::GetDatePoint( rDateID, recDate::DATE_POINT_Beg );
+            rDatePt = recDate::GetDatePoint( rDateID, recDate::DatePoint::beg );
             AddPersonaToEventa( rEveID, perMotherID, 
                 recEventTypeRole::ROLE_RegBirth_Parent );
-            bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
+            bDatePt = recDate::GetDatePoint( bDateID, recDate::DatePoint::beg );
             AddPersonaToEventa( bEveID, perMotherID, 
                 recEventTypeRole::ROLE_Birth_Mother );
             CreateRelationship( perMotherID, "Mother", perID, ref.f_id, &seq );
@@ -554,7 +554,7 @@ void Process1051File( wxFileName& fn )
         seq = 0;
 
         dateID = CreateDate( line.Mid( 0, 11 ), ref.f_id, &seq );
-        datePt = recDate::GetDatePoint( dateID, recDate::DATE_POINT_Beg );
+        datePt = recDate::GetDatePoint( dateID, recDate::DatePoint::beg );
         if( !address.IsEmpty() ) {
             placeID = CreatePlace( address, ref.f_id, &seq );
         }
@@ -852,7 +852,7 @@ void Process1051File( wxFileName& fn )
         }
 
         if( bEveID ) {
-            bDatePt = recDate::GetDatePoint( bDateID, recDate::DATE_POINT_Beg );
+            bDatePt = recDate::GetDatePoint( bDateID, recDate::DatePoint::beg );
             if( perMotherID ) {
                 AddPersonaToEventa( bEveID, perMotherID, recEventTypeRole::ROLE_Birth_Mother );
             }
