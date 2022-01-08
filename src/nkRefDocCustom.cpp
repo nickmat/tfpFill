@@ -283,7 +283,7 @@ void Process161File( wxFileName& fn )
         str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
         if( !str.empty() ) {
             idt indMotherID = 0;
-            recFamilyVec fams = recIndividual::GetParentList( indID );
+            recFamilyVec fams = recFamily::GetParentList( indID );
             if( !fams.empty() ) {
                 indMotherID = fams[0].FGetWifeID();
             }
