@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     22nd February 2015
- * Copyright:   Copyright (c) 2015 ~ 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2015 ~ 2022, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfp_fill is free software: you can redistribute it and/or modify
@@ -101,9 +101,9 @@ idt Event_CreateFromEventa( const recEventa& ea )
     e.FSetNote( ea.FGetNote() );
     e.FSetDatePt( ea.FGetDatePt() );
 
-    recET_GRP grp = recEventType::GetGroup( typeID );
+    recEventTypeGrp grp = recEventType::GetGroup( typeID );
     idt eID;
-    if( grp == recET_GRP_Personal ) {
+    if( grp == recEventTypeGrp::personal ) {
         //idt existingEventID = recIndividual::GetPersonalEvent( ?? we dont have the individual!!!
 
         e.Save();
@@ -137,17 +137,17 @@ bool Eventa_IsEventMatch( const recEventa& ea, idt eventID )
     if( eve.FGetID() == 0 ) {
         return false;
     }
-    recET_GRP et = ea.GetTypeGroup();
+    recEventTypeGrp et = ea.GetTypeGroup();
     if( et != eve.GetTypeGroup() ) {
         return false;
     }
     switch( et )
     {
-    case recET_GRP_Birth:
-    case recET_GRP_Death:
+    case recEventTypeGrp::birth:
+    case recEventTypeGrp::death:
         return true; // Only one Event per Individual for these.
-    case recET_GRP_FamUnion:
-    case recET_GRP_FamOther:
+    case recEventTypeGrp::fam_union:
+    case recEventTypeGrp::fam_other:
         // TODO: Test for identical individuals.
         // Return false if not
         // Fall thru if they are.

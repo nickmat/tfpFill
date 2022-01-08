@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2018, Nick Matthews.
+ * Copyright:   Copyright (c) 2011 ~ 2022, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -580,9 +580,9 @@ idt LinkOrCreateEventFromEventa( idt eaID )
     recEventa ea(eaID);
     recEventType et( ea.FGetTypeID() );
     recIdVec eIDs = ea.FindLinkedEventsViaInd();
-    if( et.FGetGrp() == recET_GRP_Birth ||
-        et.FGetGrp() == recET_GRP_Death ||
-        et.FGetGrp() == recET_GRP_Personal
+    if( et.FGetGrp() == recEventTypeGrp::birth ||
+        et.FGetGrp() == recEventTypeGrp::death ||
+        et.FGetGrp() == recEventTypeGrp::personal
     ) {
         if( eIDs.empty() ) {
             return CreateEventFromEventa( eaID );
