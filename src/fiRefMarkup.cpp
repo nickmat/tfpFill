@@ -383,17 +383,17 @@ wxString fiRefMarkup::read_text( const wxString& input, wxString* tail ) const
 Sex fiRefMarkup::read_sex( const wxString& input, wxString* tail ) const
 {
     wxString str = input;
-    Sex sex = SEX_Unstated;
+    Sex sex = Sex::unstated;
     wxString::const_iterator it = str.begin();
     if( it != str.end() ) {
         if( *it == 'M' ) {
-            sex = SEX_Male;
+            sex = Sex::male;
         } else if( *it == 'F' ) {
-            sex = SEX_Female;
+            sex = Sex::female;
         } else if( *it == 'U' ) {
-            sex = SEX_Unknown;
+            sex = Sex::unknown;
         }
-        if( sex != SEX_Unstated ) {
+        if( sex != Sex::unstated ) {
             it++;
         }
         if( it != str.end() ) {

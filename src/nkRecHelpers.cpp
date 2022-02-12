@@ -244,7 +244,7 @@ void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names )
         if( IndPerMap.count(indID) > 0 ) {
             AddName( refID, IndPerMap[indID], names[i], &seq );
         } else {
-            IndPerMap[indID] = CreatePersona( refID, indID, names[i], SEX_Unstated, &seq );
+            IndPerMap[indID] = CreatePersona( refID, indID, names[i], Sex::unstated, &seq );
         }
     }
 }
@@ -456,10 +456,10 @@ idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID )
     recEventTypeRole::Role role;
     switch( recPersona::GetSex( perID ) )
     {
-    case SEX_Male:
+    case Sex::male:
         role = recEventTypeRole::ROLE_Family_Husband;
         break;
-    case SEX_Female:
+    case Sex::female:
         role = recEventTypeRole::ROLE_Family_Wife;
         break;
     default:
@@ -647,7 +647,7 @@ bool CreateIndividual( idt indID, idt perID )
     Sex sex = recPersona::GetSex( perID );
     ind.FSetSex( sex );
     recFamily fam(0);
-    if( sex != SEX_Female ) {
+    if( sex != Sex::female ) {
         fam.FSetHusbID( indID );
     } else {
         fam.FSetWifeID( indID );
@@ -664,10 +664,10 @@ Sex GetSexFromStr( const wxString& str )
 {
     if( !str.IsEmpty() ) {
         wxChar ch = str[0];
-        if( ch == 'M' || ch == 'm' ) return SEX_Male;
-        if( ch == 'F' || ch == 'f' ) return SEX_Female;
+        if( ch == 'M' || ch == 'm' ) return Sex::male;
+        if( ch == 'F' || ch == 'f' ) return Sex::female;
     }
-    return SEX_Unknown;
+    return Sex::unknown;
 }
 
 wxString GetConditionStr( Sex sex, const wxString& cond )
@@ -683,7 +683,7 @@ wxString GetConditionStr( Sex sex, const wxString& cond )
         case 'S': case 's':
             return "Single";
         case 'W': case 'w':
-            if( sex = SEX_Female ) {
+            if( sex == Sex::female ) {
                 return "Widow";
             }
             return "Widower";

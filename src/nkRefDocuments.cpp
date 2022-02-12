@@ -563,7 +563,7 @@ wxPrintf( "\nRef R" ID " No indID found. ", refID );
     idt fatherIndID = GetIndividualAnchor( cell2, &name, &aNode );
     idt fatherPerID = 0;
     if( !name.IsEmpty() ) {
-        fatherPerID = CreatePersona( refID, fatherIndID, name, SEX_Male );
+        fatherPerID = CreatePersona( refID, fatherIndID, name, Sex::male );
         xmlChangeLink( aNode, recENT_Persona, fatherPerID );
     }
 
@@ -577,7 +577,7 @@ wxPrintf( "\nRef R" ID " No indID found. ", refID );
 //        nameID = GetWifeName( name, nameID, refID, &refSeq );
 //        motherPerID = CreatePersona( refID, motherIndID, nameID, SEX_Female );
         // Assume name is just given name so add '?' for birth surname
-        motherPerID = CreatePersona( refID, motherIndID, name+" ?", SEX_Female );
+        motherPerID = CreatePersona( refID, motherIndID, name+" ?", Sex::female );
         xmlChangeLink( aNode, recENT_Persona, motherPerID );
     }
 
