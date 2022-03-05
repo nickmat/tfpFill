@@ -173,7 +173,7 @@ int main( int argc, char** argv )
             recUninitialize();
             return EXIT_FAILURE;
         }
-        if ( !recDb::AttachDb( outMediaFile, "Media" ) ) {
+        if ( !recDb::AttachDb( "Main", outMediaFile, "Media") ) {
             wxPrintf( "\nCan't Attach Media Database.\n" );
             recUninitialize();
             return EXIT_FAILURE;
