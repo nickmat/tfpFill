@@ -327,7 +327,7 @@ void Process161File( wxFileName& fn )
         if( pos1 != wxString::npos ) {
             idt noteRefID;
             line.Mid( pos1+10, 5 ).ToLongLong( &noteRefID );
-            wxString str = "R" + recGetIDStr( noteRefID );
+            wxString str = "R" + recGetStr( noteRefID );
             wxString refStr = MakeIntoLink( str, RT_Reference, noteRefID );
             pos2 = line.find( "</a>", pos1 );
             line = line.substr( 0, pos1-9 ) + refStr + line.substr( pos2+4 );
