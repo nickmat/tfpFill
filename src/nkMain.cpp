@@ -36,6 +36,8 @@
 #endif
 
 #include "nkMain.h"
+
+#include "fiCommon.h"
 #include "xml2.h"
 
 #include <rec/recDb.h>
@@ -50,9 +52,9 @@
 #include <ctime>
 
 
-#define VERSION   "0.3.1"
+#define VERSION   "0.4.0"
 #define PROGNAME  "fill for TFP"
-#define PROGDATE  "2011 ~ 2018"
+#define PROGDATE  "2011 ~ 2022"
 
 const wxString g_version = VERSION;
 const wxString g_progName = PROGNAME;
@@ -69,7 +71,8 @@ const wxString g_title = PROGNAME " - Version " VERSION VERSION_CONFIG "\n"
 
   8jan17  V0.2.0 - Includes all code for creating database from GEDCOM plus others.
  24dec17  V0.3.0 - Based on adding data from rd*.htm files only.
-  active  V0.3.1 - Now adds media (image) files as well.
+  5may19  V0.3.1 - Now adds media (image) files as well.
+  active  V0.4.0 - Now adds common data. Updated for Database TFPD-v0.0.10.44.
 */
 
 bool g_verbose = false;
@@ -130,6 +133,7 @@ int main( int argc, char** argv )
     wxString initDatabase = conf.Read( "/Input/Initial-Database" );
     wxString refFolder = conf.Read( "/Input/Ref-Folder" );
     wxString imgFolder = conf.Read( "/Input/Image-Folder" );
+    wxString CommonData = conf.Read( "/Input/Common-Data" );
     wxString outFile = conf.Read( "/Output/Database" );
     wxString outMediaFile = conf.Read( "/Output/Media" );
 
@@ -182,6 +186,9 @@ int main( int argc, char** argv )
 
     recDb::Begin();
 #if 1
+    if( !CommonData.empty() ) {
+        TransferCommonData( CommonData );
+    }
     MediaVec media;
     if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );

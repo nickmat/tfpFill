@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2019, Nick Matthews.
+ * Copyright:   Copyright (c) 2011..2022, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -47,6 +47,8 @@ extern recEntity DecodeOldHref( const wxString& href );
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
 
+/* fiCommon.cpp */
+
 /* fiMedia.cpp */
 extern bool InputMediaFiles( const wxString& imgFolder );
 extern bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, const MediaVec& media );
@@ -55,7 +57,6 @@ extern bool OutputMediaDatabase( const wxString& filename, const wxString& refFo
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 
 /* nkRefDocuments.cpp */
-extern void ProcessRefFile( const wxString path, idt refID, Filenames& customs );
 extern bool InputRefFiles( const wxString& refFolder, MediaVec& media );
 
 /* nkRefDocCustom.cpp */
