@@ -84,6 +84,7 @@ idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq )
     recDate date;
     date.SetDefaults();
     date.f_rel_id = rel.f_id;
+    date.CreateUidChanged();
     rel.CalculateDate( &date );
     date.Save();
     if( refID ) {
@@ -96,6 +97,7 @@ idt CreatePlace( const wxString& address, idt refID, int* pseq )
 {
     if( address.IsEmpty() ) return 0;
     recPlace p(0);
+    p.CreateUidChanged();
     p.Save();
     recPlacePart pp(0);
     pp.f_place_id = p.f_id;
@@ -117,6 +119,7 @@ idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID )
     ev.f_date1_id = dID;
     ev.f_place_id = pID;
     ev.f_date_pt = recDate::GetDatePoint( dID );
+    ev.CreateUidChanged();
     ev.Save();
     return ev.f_id;
 }
@@ -175,6 +178,7 @@ idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex )
     recPersona per(0);
     per.f_sex = sex;
     per.f_ref_id = refID;
+    per.CreateUidChanged();
     per.Save();
 
     recName name(nameID);
@@ -201,6 +205,7 @@ idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* 
     per.FSetSex( sex );
     per.FSetRefID( refID );
     per.FSetNote( note );
+    per.CreateUidChanged();
     per.Save();
 
     recName name(0);
@@ -258,6 +263,7 @@ idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID )
     eventa.FSetDate1ID( dateID );
     eventa.FSetPlaceID( placeID );
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -282,6 +288,7 @@ idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID )
     eventa.f_date1_id = dateID;
     eventa.f_place_id = placeID;
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -305,6 +312,7 @@ idt CreateChrisEventa( idt refID, idt perID, idt dateID, idt placeID )
     eventa.f_date1_id = dateID;
     eventa.f_place_id = placeID;
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -328,6 +336,7 @@ idt CreateMarriageEvent( idt perID, idt dateID, idt placeID, long role, idt refI
     eventa.f_date1_id = dateID;
     eventa.f_place_id = placeID;
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -351,6 +360,7 @@ idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID )
     eventa.f_date1_id = dateID;
     eventa.f_place_id = placeID;
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -374,6 +384,7 @@ idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID )
     eventa.f_date1_id = dateID;
     eventa.f_place_id = placeID;
     eventa.UpdateDatePoint();
+    eventa.CreateUidChanged();
     eventa.Save();
 
     recEventaPersona ep(0);
@@ -397,6 +408,7 @@ idt CreateBurialEventa( idt refID, idt perID, idt dateID, idt placeID )
     ea.FSetDate1ID( dateID );
     ea.FSetPlaceID( placeID );
     ea.UpdateDatePoint();
+    ea.CreateUidChanged();
     ea.Save();
 
     recEventaPersona ep(0);
@@ -418,6 +430,7 @@ idt CreateResidenceEventa( idt dateID, idt placeID, idt refID )
     ea.FSetDate1ID( dateID );
     ea.FSetPlaceID( placeID );
     ea.UpdateDatePoint();
+    ea.CreateUidChanged();
     ea.Save();
     idt eaID = ea.FGetID();
 
@@ -433,6 +446,7 @@ idt CreateMediaEventa( idt refID )
     ea.FSetDate1ID( 0 );
     ea.FSetPlaceID( 0 );
     ea.UpdateDatePoint();
+    ea.CreateUidChanged();
     ea.Save();
     idt eaID = ea.FGetID();
 
@@ -448,6 +462,7 @@ idt CreateFamilyRelEventa( idt refID, idt perID, idt dateID, idt placeID )
     e.FSetDate1ID( dateID );
     e.FSetPlaceID( placeID );
     e.UpdateDatePoint();
+    e.CreateUidChanged();
     e.Save();
 
     recEventaPersona ep(0);
@@ -496,6 +511,7 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
     ea.FSetTypeID( recEventType::ET_Occupation );
     ea.FSetDate1ID( dateID );
     ea.UpdateDatePoint();
+    ea.CreateUidChanged();
     ea.SetAutoTitle( recPersona::GetNameStr( perID ) );
     ea.Save();
     idt eaID = ea.FGetID();
@@ -523,6 +539,7 @@ idt CreateCondition( const wxString& con, idt refID, idt perID, idt dateID )
     er.FSetTypeID( recEventType::ET_Condition );
     er.FSetDate1ID( dateID );
     er.UpdateDatePoint();
+    er.CreateUidChanged();
     er.SetAutoTitle( recPersona::GetNameStr( perID ) );
     er.Save();
     idt erID = er.FGetID();

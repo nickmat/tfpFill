@@ -88,6 +88,7 @@ void DoCreateElements( wxXmlNode* node, idt  refID )
     CreateElements( node, refID, elements );
 }
 
+idt g_researcherID;
 idt g_1841CensusDateID;
 idt g_1851CensusDateID;
 idt g_1861CensusDateID;
@@ -99,14 +100,15 @@ idt g_1911CensusDateID;
 
 void CreateSourceGlobals()
 {
-    g_1841CensusDateID = recDate::Create( "6 Jun 1841" );
-    g_1851CensusDateID = recDate::Create( "31 Mar 1851" );
-    g_1861CensusDateID = recDate::Create( "8 Apr 1861" );
-    g_1871CensusDateID = recDate::Create( "3 Apr 1871" );
-    g_1881CensusDateID = recDate::Create( "4 Apr 1881" );
-    g_1891CensusDateID = recDate::Create( "6 Apr 1891" );
-    g_1901CensusDateID = recDate::Create( "1 Apr 1901" );
-    g_1911CensusDateID = recDate::Create( "3 Apr 1911" );
+    g_researcherID = 1;
+    g_1841CensusDateID = -1; // recDate::Create( "6 Jun 1841" );
+    g_1851CensusDateID = -2; // recDate::Create( "31 Mar 1851" );
+    g_1861CensusDateID = -3; // recDate::Create( "8 Apr 1861" );
+    g_1871CensusDateID = -4; // recDate::Create( "3 Apr 1871" );
+    g_1881CensusDateID = -5; // recDate::Create( "4 Apr 1881" );
+    g_1891CensusDateID = -6; // recDate::Create( "6 Apr 1891" );
+    g_1901CensusDateID = -7; // recDate::Create( "1 Apr 1901" );
+    g_1911CensusDateID = -8; // recDate::Create( "3 Apr 1911" );
 }
 
 void ListIndividuals( wxXmlNode* node, recIdVec& list, wxArrayString& names )
@@ -690,7 +692,9 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
     ref.FSetID( refID );
     ref.FSetTitle( title );
     ref.FSetStatement( refStr );
+    ref.FSetResID( 1 );
     ref.FSetUserRef( "RD"+recGetStr( refID ) );
+    ref.CreateUidChanged();
     ref.Save();
     return INTREF_Done;
 }
@@ -794,6 +798,7 @@ bool InputRefFiles( const wxString& refFolder, MediaVec& media )
         cont = rddir.GetFirst( &rdfilename, "rd?????.htm", wxDIR_FILES );
         while( cont ) {
             idt refID = recGetID( rdfilename.substr( 2 ) );
+//            wxPrintf( "File: %s\n", rdfilename );
             wxString path = refFolder + "/" + rddirname + "/" + rdfilename;
             ProcessRefFile( path, refID, customs, media );
             cont = rddir.GetNext( &rdfilename );
