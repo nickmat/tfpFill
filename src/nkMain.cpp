@@ -142,6 +142,7 @@ int main( int argc, char** argv )
     wxPrintf( "Current folder: [%s]\n", wxGetCwd() );
     wxPrintf( "Configuration File: [%s]\n\n", configName.GetFullPath() );
     wxPrintf( "Initial Database: [%s]\n", initDatabase );
+    wxPrintf( "CommonData Database: [%s]\n", CommonData );
     wxPrintf( "Reference folder: [%s]\n", refFolder );
     wxPrintf( "Image folder: [%s]\n", imgFolder );
     wxPrintf( "Output database file: [%s]\n", outFile );
