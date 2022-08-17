@@ -48,7 +48,7 @@ void TransferCommonData( const wxString& CommonData )
     wxString extdb = extfname.GetName();
     bool ret = recDb::OpenExternalDb( CommonData, extdb );
     recIdVec refIDs = recReference::GetReferenceIDs( extdb );
-    if( ret && extdb == "cd-sources-uk" ) {
+    if( ret ) {
         for( idt refID : refIDs ) {
             recReference::Transfer( refID, extdb, "Main", 0 );
             wxPrintf( "." );
