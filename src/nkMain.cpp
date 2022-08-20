@@ -136,6 +136,7 @@ int main( int argc, char** argv )
     wxString CommonData = conf.Read( "/Input/Common-Data" );
     wxString outFile = conf.Read( "/Output/Database" );
     wxString outMediaFile = conf.Read( "/Output/Media" );
+    wxString outPhotoFile = conf.Read( "/Output/Family-Photos" );
 
     wxPrintf( "Database version: %s\n", recFullVersion );
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
@@ -147,6 +148,7 @@ int main( int argc, char** argv )
     wxPrintf( "Image folder: [%s]\n", imgFolder );
     wxPrintf( "Output database file: [%s]\n", outFile );
     wxPrintf( "Media database file: [%s]\n", outMediaFile );
+    wxPrintf( "Family photos database file: [%s]\n", outPhotoFile );
 
     if( wxFileExists( outFile ) ) {
         wxRemoveFile( outFile );
@@ -168,22 +170,16 @@ int main( int argc, char** argv )
         }
     }
 
-    if ( wxFileExists( outMediaFile ) ) {
-        wxRemoveFile( outMediaFile );
+    AssFileMap assMap;
+    bool retval = CreateMediaFile( assMap, "Scans", outMediaFile, "Document scans" );
+    retval = retval && CreateMediaFile( assMap, "Photos", outPhotoFile, "Family photos" );
+    if( !retval ) {
+        wxPrintf( "\nCan't Create Media Database.\n" );
+        recUninitialize();
+        return EXIT_FAILURE;
     }
-    if ( !outMediaFile.empty() ) {
-        wxPrintf( "\nCreating media database" );
-        if ( recDb::CreateDbFile( outMediaFile, recDb::DbType::media_data_only ) != recDb::CreateReturn::OK ) {
-            wxPrintf( "\nCan't Create Media Database.\n" );
-            recUninitialize();
-            return EXIT_FAILURE;
-        }
-        if ( !recDb::AttachDb( "Main", outMediaFile, "Media") ) {
-            wxPrintf( "\nCan't Attach Media Database.\n" );
-            recUninitialize();
-            return EXIT_FAILURE;
-        }
-    }
+    wxPrintf( "\nassMap[\"Scans\"] = " ID, assMap["Scans"] );
+    wxPrintf( "\nassMap[\"Photos\"] = " ID, assMap["Photos"] );
 
     recDb::Begin();
 #if 1
@@ -197,11 +193,11 @@ int main( int argc, char** argv )
     }
     if ( !imgFolder.empty() ) {
         wxPrintf( " Done.\nInput Image Files " );
-        InputMediaFiles( imgFolder );
+        InputMediaFiles( imgFolder, assMap["Photos"] );
     }
     if ( !outMediaFile.empty() ) {
         wxPrintf( " Done.\nCreate Media Database " );
-        OutputMediaDatabase( outMediaFile, refFolder, media );
+        OutputMediaDatabase( refFolder, media, assMap["Scans"] );
     }
 
 #else
@@ -264,6 +260,36 @@ wxString CreateCommaList( wxString& first, wxString& second )
     if( first == wxEmptyString ) return second;
     if( second == wxEmptyString ) return first;
     return first + ", " + second;
+}
+
+bool CreateMediaFile(
+    AssFileMap& assMap, const wxString& name, const wxString& dbfile, const wxString& comment )
+{
+    if( wxFileExists( dbfile ) ) {
+        wxRemoveFile( dbfile );
+    }
+    if( !dbfile.empty() ) {
+        wxPrintf( "\nCreating %s database", name );
+        recDb::DbType type = recDb::DbType::media_data_only;
+        if( recDb::CreateDbFile( dbfile, type ) != recDb::CreateReturn::OK ) {
+            wxPrintf( "\nCan't Create Media Database.\n" );
+            return false;
+        }
+        if( !recDb::AttachDb( "Main", dbfile, name ) ) {
+            wxPrintf( "\nCan't Attach Media Database.\n" );
+            return false;
+        }
+    }
+    wxFileName path( dbfile );
+    path.ClearExt();
+
+    recAssociate ass( 0 );
+    ass.FSetPath( path.GetFullName() );
+    ass.FSetComment( comment );
+    ass.Save();
+
+    assMap[name] = ass.FGetID();
+    return true;
 }
 
 // End of nkMain.cpp file 

@@ -560,6 +560,7 @@ idt fiRefMarkup::create_persona_rec( const wxString& str )
     per.FSetRefID( m_referenceID );
     per.FSetSex( sex );
     per.FSetNote( note );
+    per.CreateUidChanged();
     per.Save();
 
     return per.FGetID();
@@ -655,6 +656,7 @@ idt fiRefMarkup::create_eventa_rec( const wxString& str )
     ea.FSetPlaceID( m_cur_place );
     ea.SetAutoTitle( perName );
     ea.UpdateDatePoint();
+    ea.CreateUidChanged();
     ea.Save();
     m_cur_eventa = ea.FGetID();
 
@@ -741,10 +743,14 @@ void fiRefMarkup::create_reference_rec()
     if( refNode ) {
         markup_node( refNode );
         wxString refStr = "<!-- HTML -->\n" + xmlGetSource( refNode );
-        recReference ref(m_referenceID);
-        ref.f_id = m_referenceID;
-        ref.f_title = title;
-        ref.f_statement = refStr;
+        recReference ref(0);
+        ref.FSetID( m_referenceID );
+        ref.FSetHigherID( 0 );
+        ref.FSetTitle( title );
+        ref.FSetStatement( refStr );
+        ref.FSetResID( 1 );
+        ref.FSetUserRef( recReference::GetIdStr( m_referenceID ) );
+        ref.CreateUidChanged();
         ref.Save();
     }
 }

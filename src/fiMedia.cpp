@@ -109,10 +109,10 @@ idt CreateMediaEvent( recReference& ref )
     idt indID;
     int seq = 0;
     std::vector<wxXmlNode*> level;
-    while(node ){
-        if ( node->GetName() == "a" ) {
+    while( node ) {
+        if( node->GetName() == "a" ) {
             wxString href = node->GetAttribute( "href" );
-            if ( DecodeHref( href, &indID, nullptr ) ) {
+            if( DecodeHref( href, &indID, nullptr ) ) {
                 idt namID = CreateName( xmlGetAllContent( node ) );
                 recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, namID, &seq );
                 Sex sex = recIndividual::GetSex( indID );
@@ -123,11 +123,12 @@ idt CreateMediaEvent( recReference& ref )
             }
         }
         wxXmlNode* next = node->GetChildren();
-        if ( next ) {
+        if( next ) {
             level.push_back( node );
-        } else {
+        }
+        else {
             next = node->GetNext();
-            while ( !next && !level.empty() ) {
+            while( !next && !level.empty() ) {
                 next = level.back();
                 level.pop_back();
                 next = next->GetNext();
@@ -142,7 +143,7 @@ idt CreateMediaEvent( recReference& ref )
     return CreateEventFromEventa( eaID );
 }
 
-void CreateImage( long entry, idt galID, const wxString&  imgFolder )
+void CreateImage( long entry, idt galID, const wxString&  imgFolder, idt assID )
 {
     wxFileName txtfilename( GetImageTextFileName( entry, imgFolder ) );
     txtfilename.MakeAbsolute();
@@ -171,22 +172,31 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     imgBuff.UngetAppendBuf( iRead );
 
     recReference ref( 0 );
+    ref.FSetHigherID( 0 );
     ref.FSetTitle( "Photo of " + title );
     ref.FSetStatement( "<!-- HTML -->\n<div class='img-text'>\n" + content + "</div>\n" );
+    ref.FSetResID( 1 );
     ref.FSetUserRef( "Im" + recGetStr( entry ) );
+    ref.CreateUidChanged();
     ref.Save();
     idt eveID = CreateMediaEvent( ref );
 
     recMediaData md( 0 );
+    md.FSetTitle( title );
     md.FSetData( imgBuff );
+    md.FSetType( recMediaData::Mime::image_jpeg );
     md.FSetFile( "image/" + ref.FGetUserRef() );
-    md.Save();
+    md.CreateUidChanged();
+    md.Save( "Photos" );
 
     recMedia med( 0 );
     med.FSetTitle( title );
-    med.FSetNote( ref.FGetStatement() );
     med.FSetDataID( md.FGetID() );
+    med.FSetAssID( assID );
     med.FSetRefID( ref.FGetID() );
+    med.FSetRefSeq( 1 );
+    med.FSetNote( ref.FGetStatement() );
+    med.CreateUidChanged();
     med.Save();
 
     recGalleryMedia gm( 0 );
@@ -203,25 +213,26 @@ void CreateImage( long entry, idt galID, const wxString&  imgFolder )
     }
 }
 
-void ProcessImages( idt galID, const wxString& imgFolder, wxXmlNode* node )
+void ProcessImages( idt galID, const wxString& imgFolder, wxXmlNode* node, idt assID )
 {
     for ( node = node->GetChildren(); node; node = node->GetNext() ) {
         if ( node->GetName() == "entry" ) {
             wxString numStr = xmlGetAllContent( node );
             long entry;
             if ( numStr.ToLong( &entry) && entry > 0  ) {
-                CreateImage( entry, galID, imgFolder);
+                CreateImage( entry, galID, imgFolder, assID );
             }
         }
     }
 }
 
-void CreateGallery( const wxString& imgFolder, wxXmlNode* node )
+void CreateGallery( const wxString& imgFolder, wxXmlNode* node, idt assID )
 {
     long num = 0;
     wxString title;
     long number;
     recGallery gal(0);
+    gal.CreateUidChanged();
 
     for ( node = node->GetChildren(); node; node = node->GetNext() ) {
         if ( node->GetName() == "number" ) {
@@ -232,22 +243,22 @@ void CreateGallery( const wxString& imgFolder, wxXmlNode* node )
             gal.FSetTitle( xmlGetAllContent( node ) );
         } else if ( node->GetName() == "entries" ) {
             gal.Save();
-            ProcessImages( gal.FGetID(), imgFolder, node ); 
+            ProcessImages( gal.FGetID(), imgFolder, node, assID );
             gal.Clear();
         }
     }
 }
 
-void ProcessGalleries( const wxString& imgFolder, wxXmlNode* node )
+void ProcessGalleries( const wxString& imgFolder, wxXmlNode* node, idt assID )
 {
     for ( node = node->GetChildren(); node; node = node->GetNext() ) {
         if ( node->GetName() == "gallery" ) {
-            CreateGallery( imgFolder, node );
+            CreateGallery( imgFolder, node, assID );
         }
     }
 }
 
-bool InputMediaFiles( const wxString& imgFolder )
+bool InputMediaFiles( const wxString& imgFolder, idt assID )
 {
     wxString filename = imgFolder + "/galspec.xml";
     wxFileName galfn( filename );
@@ -257,23 +268,14 @@ bool InputMediaFiles( const wxString& imgFolder )
 
     for ( node = node->GetChildren(); node; node = node->GetNext() ) {
         if ( node->GetName() == "galleries" ) {
-            ProcessGalleries( imgFolder, node );
+            ProcessGalleries( imgFolder, node, assID );
         }
     }
     return true;
 }
 
-bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, const MediaVec& media_vec )
+bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media_vec, idt assID )
 {
-    wxFileName path( filename );
-    path.ClearExt();
-
-    recAssociate ass( 0 );
-    ass.FSetPath( path.GetFullName() );
-    ass.Save();
-    idt assID = ass.FGetID();
-    wxASSERT( assID == 1 );
-
     wxString medFolder( refFolder + "/or/" );
     for ( auto media : media_vec ) {
         wxFileName imgfilename( medFolder + media.filename );
@@ -288,16 +290,20 @@ bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, c
         wxASSERT( fname.GetExt() == "jpg" );
         fname.ClearExt();
         recMediaData md( 0 );
+        md.FSetTitle( "Scan " + fname.GetName() );
         md.FSetData( imgBuff );
+        md.FSetType( recMediaData::Mime::image_jpeg );
         md.FSetFile( fname.GetFullPath( wxPATH_UNIX ) );
-        md.Save( "Media" );
+        md.CreateUidChanged();
+        md.Save( "Scans" );
         idt mdID = md.FGetID();
 
         recMedia med( 0 );
-        med.FSetAssID( 1 );
-        med.FSetDataID( mdID );
-        med.FSetRefID( media.ref );
         med.FSetTitle( recReference::GetTitle( media.ref ) + " " + media.text );
+        med.FSetDataID( mdID );
+        med.FSetAssID( assID );
+        med.FSetRefID( media.ref );
+        med.CreateUidChanged();
         med.Save();
     }
     return true;

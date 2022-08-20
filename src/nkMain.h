@@ -42,16 +42,21 @@ struct Media {
 };
 typedef std::vector< Media > MediaVec;
 
+using AssFileMap = std::map<wxString, idt>;
+
+
 /* nkMain.cpp */
 extern recEntity DecodeOldHref( const wxString& href );
 extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
+extern bool CreateMediaFile(
+    AssFileMap& assMap, const wxString& name, const wxString& dbfile, const wxString& comment );
 
 /* fiCommon.cpp */
 
 /* fiMedia.cpp */
-extern bool InputMediaFiles( const wxString& imgFolder );
-extern bool OutputMediaDatabase( const wxString& filename, const wxString& refFolder, const MediaVec& media );
+extern bool InputMediaFiles( const wxString& imgFolder, idt assID );
+extern bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media, idt assID );
 
 /* fiRefMarkup.cpp */
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
