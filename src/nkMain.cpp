@@ -137,6 +137,8 @@ int main( int argc, char** argv )
     wxString outFile = conf.Read( "/Output/Database" );
     wxString outMediaFile = conf.Read( "/Output/Media" );
     wxString outPhotoFile = conf.Read( "/Output/Family-Photos" );
+    wxString outCensusFile = conf.Read( "/Output/Census-Scans" );
+    wxString outBMDFile = conf.Read( "/Output/BMD-Scans" );
 
     wxPrintf( "Database version: %s\n", recFullVersion );
     wxPrintf( "SQLite3 version: %s\n", wxSQLite3Database::GetVersion() );
@@ -149,6 +151,8 @@ int main( int argc, char** argv )
     wxPrintf( "Output database file: [%s]\n", outFile );
     wxPrintf( "Media database file: [%s]\n", outMediaFile );
     wxPrintf( "Family photos database file: [%s]\n", outPhotoFile );
+    wxPrintf( "Media database file: [%s]\n", outCensusFile );
+    wxPrintf( "Media database file: [%s]\n", outBMDFile );
 
     if( wxFileExists( outFile ) ) {
         wxRemoveFile( outFile );
@@ -173,6 +177,8 @@ int main( int argc, char** argv )
     AssFileMap assMap;
     bool retval = CreateMediaFile( assMap, "Scans", outMediaFile, "Document scans" );
     retval = retval && CreateMediaFile( assMap, "Photos", outPhotoFile, "Family photos" );
+    retval = retval && CreateMediaFile( assMap, "Census", outCensusFile, "Census scans" );
+    retval = retval && CreateMediaFile( assMap, "BMD", outBMDFile, "BMD index pages" );
     if( !retval ) {
         wxPrintf( "\nCan't Create Media Database.\n" );
         recUninitialize();
@@ -180,6 +186,8 @@ int main( int argc, char** argv )
     }
     wxPrintf( "\nassMap[\"Scans\"] = " ID, assMap["Scans"] );
     wxPrintf( "\nassMap[\"Photos\"] = " ID, assMap["Photos"] );
+    wxPrintf( "\nassMap[\"Census\"] = " ID, assMap["Census"] );
+    wxPrintf( "\nassMap[\"BMD\"] = " ID, assMap["BMD"] );
 
     recDb::Begin();
 #if 1
@@ -197,7 +205,7 @@ int main( int argc, char** argv )
     }
     if ( !outMediaFile.empty() ) {
         wxPrintf( " Done.\nCreate Media Database " );
-        OutputMediaDatabase( refFolder, media, assMap["Scans"] );
+        OutputMediaDatabase( refFolder, media, assMap );
     }
 
 #else

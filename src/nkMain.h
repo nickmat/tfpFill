@@ -56,7 +56,8 @@ extern bool CreateMediaFile(
 
 /* fiMedia.cpp */
 extern bool InputMediaFiles( const wxString& imgFolder, idt assID );
-extern bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media, idt assID );
+extern bool OutputMediaDatabase(
+    const wxString& refFolder, const MediaVec& media, AssFileMap& assMap );
 
 /* fiRefMarkup.cpp */
 extern void ProcessMarkupRef( idt refID, wxXmlNode* root );

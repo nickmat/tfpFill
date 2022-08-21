@@ -274,11 +274,30 @@ bool InputMediaFiles( const wxString& imgFolder, idt assID )
     return true;
 }
 
-bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media_vec, idt assID )
+bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media_vec, AssFileMap& assMap )
 {
     wxString medFolder( refFolder + "/or/" );
     for ( auto media : media_vec ) {
+        wxString mediadb = "Scans";
         wxFileName imgfilename( medFolder + media.filename );
+        wxArrayString dirs = imgfilename.GetDirs();
+        for( auto& dir : dirs ) {
+            if( dir == ".." ) continue;
+            if( dir == "cen" ) {
+                mediadb = "Census";
+            }
+            if( dir == "1939uk" ){
+                mediadb = "Scans";
+                break;
+            }
+            if( dir == "usa" ) {
+                break;
+            }
+            if( dir == "bmd" ) {
+                mediadb = "BMD";
+                break;
+            }
+        }
         wxMemoryBuffer imgBuff;
         wxFile infile( imgfilename.GetFullPath() );
         wxFileOffset fLen = infile.Length();
@@ -290,18 +309,18 @@ bool OutputMediaDatabase( const wxString& refFolder, const MediaVec& media_vec, 
         wxASSERT( fname.GetExt() == "jpg" );
         fname.ClearExt();
         recMediaData md( 0 );
-        md.FSetTitle( "Scan " + fname.GetName() );
+        md.FSetTitle( mediadb + " " + fname.GetName() );
         md.FSetData( imgBuff );
         md.FSetType( recMediaData::Mime::image_jpeg );
         md.FSetFile( fname.GetFullPath( wxPATH_UNIX ) );
         md.CreateUidChanged();
-        md.Save( "Scans" );
+        md.Save( mediadb );
         idt mdID = md.FGetID();
 
         recMedia med( 0 );
         med.FSetTitle( recReference::GetTitle( media.ref ) + " " + media.text );
         med.FSetDataID( mdID );
-        med.FSetAssID( assID );
+        med.FSetAssID( assMap[mediadb] );
         med.FSetRefID( media.ref );
         med.CreateUidChanged();
         med.Save();
