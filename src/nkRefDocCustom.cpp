@@ -217,7 +217,7 @@ wxString FindSource( const wxString& line, size_t* pos )
     return "";
 }
 
-void Process161File( wxFileName& fn )
+void Process161File( wxFileName& fn, MediaVec& media )
 {
     C161 c161[] = {
         { 14, 68, 12, 115 },
@@ -248,13 +248,17 @@ void Process161File( wxFileName& fn )
         if( block < 0 ) continue;
         // Create a new reference from this line
         ref.Clear();
-        ref.Save();
+        ref.FSetHigherID( 0 );                                                // <<======<<<<
+        ref.FSetResID( 1 );
         ref.FSetUserRef( "RD161" );
+        ref.CreateUidChanged();
+        ref.Save();
+        idt refID = ref.FGetID();
         seq = 0;
         str = line.Mid( 21, 22 ) + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c161[block].indStart );
         line.Mid( start+2, 4 ).ToLongLong( &indID ); 
-        perID = CreatePersona( ref.f_id, indID, str, Sex::unstated, &seq );
+        perID = CreatePersona( refID, indID, str, Sex::unstated, &seq );
         
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
@@ -264,21 +268,21 @@ void Process161File( wxFileName& fn )
         } else {
             str = GetDateStrMonth( year, month );
         }
-        rDateID = CreateDate( str, ref.f_id, &seq );
+        rDateID = CreateDate( str, refID, &seq );
 
         placeStr = line.Mid( 43, c161[block].distL );
         str = line.Mid( 43, c161[block].distL ).Trim() + " (RD)";
-        placeID = CreatePlace( str, ref.f_id, &seq );
+        placeID = CreatePlace( str, refID, &seq );
 
-        rEveID = CreateRegBirthEvent( ref.f_id, perID, rDateID, placeID );
+        rEveID = CreateRegBirthEvent( refID, perID, rDateID, placeID );
 
         if( block < 1 ) {
             str = GetDateStrQuarterPlus( year, quarter );
         } else {
             str = GetDateStrMonthPlus( year, month );
         }
-        bDateID = CreateDate( str, ref.f_id, &seq );
-        bEveID = CreateBirthEvent( ref.f_id, perID, bDateID, placeID );
+        bDateID = CreateDate( str, refID, &seq );
+        bEveID = CreateBirthEvent( refID, perID, bDateID, placeID );
 
         str = line.Mid( c161[block].mothB, c161[block].mothL ).Trim();
         if( !str.empty() ) {
@@ -287,21 +291,31 @@ void Process161File( wxFileName& fn )
             if( !fams.empty() ) {
                 indMotherID = fams[0].FGetWifeID();
             }
-            perMotherID = CreatePersona( ref.f_id, indMotherID, "? "+str, Sex::female, &seq, "Mother" );
+            perMotherID = CreatePersona( refID, indMotherID, "? "+str, Sex::female, &seq, "Mother" );
             rDatePt = recDate::GetDatePoint( rDateID, recDate::DatePoint::beg );
             AddPersonaToEventa( rEveID, perMotherID, 
                 recEventTypeRole::ROLE_RegBirth_Parent );
             bDatePt = recDate::GetDatePoint( bDateID, recDate::DatePoint::beg );
             AddPersonaToEventa( bEveID, perMotherID, 
                 recEventTypeRole::ROLE_Birth_Mother );
-            CreateRelationship( perMotherID, "Mother", perID, ref.f_id, &seq );
+            CreateRelationship( perMotherID, "Mother", perID, refID, &seq );
         }
 
         size_t pos = wxString::npos;
         wxString rs = FindSource( line, &pos );
         size_t pos1 = line.find( "../or" );
-        size_t pos2;
+        size_t pos2 = wxString::npos;
         if( pos1 != wxString::npos ) {
+            pos1 += 6;
+            pos2 = line.find( ".jpg", pos1 );
+            if( pos2 != wxString::npos ) {
+                wxString mfile = line.substr( pos1, pos2 - pos1 + 4 );
+                Media m;
+                m.ref = refID;
+                m.filename = line.substr( pos1, pos2 - pos1 + 4 );
+                m.text = line.substr( pos1, pos2 - pos1 );
+                media.push_back( m );
+            }
             pos2 = line.find( "</span>", pos1 ) + 7;
             while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
                 pos2++;
@@ -892,14 +906,14 @@ void Process1051File( wxFileName& fn )
     }
 }
 
-void ProcessCustomFile( wxFileName& fn )
+void ProcessCustomFile( wxFileName& fn, MediaVec& media )
 {
     long ref;
     fn.GetName().Mid( 2 ).ToLong( &ref );
     switch( ref )
     {
     case 161:
-        Process161File( fn );
+        Process161File( fn, media );
         break;
     case 162:
         Process162File( fn );

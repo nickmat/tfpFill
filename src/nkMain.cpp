@@ -187,14 +187,14 @@ int main( int argc, char** argv )
     wxPrintf( "\nassMap[\"Scans\"] = " ID, assMap["Scans"] );
     wxPrintf( "\nassMap[\"Photos\"] = " ID, assMap["Photos"] );
     wxPrintf( "\nassMap[\"Census\"] = " ID, assMap["Census"] );
-    wxPrintf( "\nassMap[\"BMD\"] = " ID, assMap["BMD"] );
+    wxPrintf( "\nassMap[\"BMD\"] = " ID "\n", assMap["BMD"]);
 
+    MediaVec media;
     recDb::Begin();
 #if 1
     if( !CommonData.empty() ) {
         TransferCommonData( CommonData );
     }
-    MediaVec media;
     if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
         InputRefFiles( refFolder, media );
@@ -209,8 +209,10 @@ int main( int argc, char** argv )
     }
 
 #else
-    Filenames customs;
-    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
+//    Filenames customs;
+//    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
+    wxFileName fn( "../../Family/web/rd01/rd00161.htm" );
+    ProcessCustomFile( fn, media );
 #endif
 
     recDb::Commit();

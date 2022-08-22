@@ -808,7 +808,7 @@ bool InputRefFiles( const wxString& refFolder, MediaVec& media )
     wxPrintf( "custom" );
     for( size_t i = 0 ; i < customs.size() ; i++ ) {
         wxPrintf( "." );
-        ProcessCustomFile( customs[i] );
+        ProcessCustomFile( customs[i], media );
     }
 
     return true;

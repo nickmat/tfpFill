@@ -66,7 +66,7 @@ extern void ProcessMarkupRef( idt refID, wxXmlNode* root );
 extern bool InputRefFiles( const wxString& refFolder, MediaVec& media );
 
 /* nkRefDocCustom.cpp */
-extern void ProcessCustomFile( wxFileName& fn );
+extern void ProcessCustomFile( wxFileName& fn, MediaVec& media );
 
 /* nkRecHelpers.cpp */
 extern bool ExportGedcom( const wxString& path );
