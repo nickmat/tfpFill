@@ -211,7 +211,7 @@ int main( int argc, char** argv )
 #else
 //    Filenames customs;
 //    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
-    wxFileName fn( "../../Family/web/rd01/rd00161.htm" );
+    wxFileName fn( "../../Family/web/rd01/rd00162.htm" );
     ProcessCustomFile( fn, media );
 #endif
 
