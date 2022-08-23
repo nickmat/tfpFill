@@ -506,7 +506,7 @@ struct C163
     int indStart;
 };
 
-void Process163File( wxFileName& fn )
+void Process163File( wxFileName& fn, MediaVec& media )
 {
     C163 c163[] = {
         { 48, 13, 105 },
@@ -517,7 +517,7 @@ void Process163File( wxFileName& fn )
     wxTextFile file( fn.GetFullPath() );
     file.Open();
     long year, quarter, month;
-    wxString str, heading;
+    wxString str, placeStr, heading;
     idt indID, perID, rDateID, dDateID, bDateID, placeID, rEveID, dEveID;
     int block = -1;
     recReference ref;
@@ -537,13 +537,17 @@ void Process163File( wxFileName& fn )
         if( block < 0 ) continue;
         // Create a new reference from this line
         ref.Clear();
-        ref.Save();
+        ref.FSetHigherID( 0 );                                                // <<======<<<<
+        ref.FSetResID( 1 );
         ref.FSetUserRef( "RD163" );
+        ref.CreateUidChanged();
+        ref.Save();
+        idt refID = ref.FGetID();
         seq = 0;
-        str = line.Mid( 21, 22 ) + " " + line.Mid( 8, 13 );
+        str = line.Mid( 21, 26 ) + " " + line.Mid( 8, 13 );
         size_t start = line.find( ">P", c163[block].indStart );
         line.Mid( start+2, 4 ).ToLongLong( &indID ); 
-        perID = CreatePersona( ref.f_id, indID, str, Sex::unstated, &seq );
+        perID = CreatePersona( refID, indID, str, Sex::unstated, &seq );
         
         line.Mid( 0, 4 ).ToLong( &year );
         line.Mid( 5, 1 ).ToLong( &quarter );
@@ -553,20 +557,21 @@ void Process163File( wxFileName& fn )
         } else {
             str = GetDateStrMonth( year, month );
         }
-        rDateID = CreateDate( str, ref.f_id, &seq );
+        rDateID = CreateDate( str, refID, &seq );
 
+        placeStr = line.Mid( c163[block].distB, c163[block].distL );
         str = line.Mid( c163[block].distB, c163[block].distL ).Trim() + " (RD)";
-        placeID = CreatePlace( str, ref.f_id, &seq );
+        placeID = CreatePlace( str, refID, &seq );
 
-        rEveID = CreateRegDeathEvent( ref.f_id, perID, rDateID, placeID );
+        rEveID = CreateRegDeathEvent( refID, perID, rDateID, placeID );
 
         if( block < 2 ) {
             str = GetDateStrQuarterPlus( year, quarter );
         } else {
             str = GetDateStrMonthPlus( year, month );
         }
-        dDateID = CreateDate( str, ref.f_id, &seq );
-        dEveID = CreateDeathEventa( ref.f_id, perID, dDateID, placeID );
+        dDateID = CreateDate( str, refID, &seq );
+        dEveID = CreateDeathEventa( refID, perID, dDateID, placeID );
         LinkOrCreateEventFromEventa( dEveID );
 
         if( block == 0 ) {  // This block may state age
@@ -574,8 +579,8 @@ void Process163File( wxFileName& fn )
             if( str != "  " ) {
                 long age;
                 str.ToLong( &age );
-                bDateID = CreateDateFromAge( age, dDateID, ref.f_id, &seq );
-                CreateBirthEvent( ref.f_id, perID, bDateID, 0 );
+                bDateID = CreateDateFromAge( age, dDateID, refID, &seq );
+                CreateBirthEvent( refID, perID, bDateID, 0 );
             }
         }
 
@@ -585,12 +590,71 @@ void Process163File( wxFileName& fn )
             if( !line.Mid( 49, 2 ).ToLong( &m ) ) m = 0;
             if( !line.Mid( 52, 2 ).ToLong( &d ) ) d = 0;
             str = GetDateStrDay( y, m, d );
-            bDateID = CreateDate( str, ref.f_id, &seq );
-            CreateBirthEvent( ref.f_id, perID, bDateID, 0 );
+            bDateID = CreateDate( str, refID, &seq );
+            CreateBirthEvent( refID, perID, bDateID, 0 );
         }
 
-        ref.f_title << year << " GRO Death Index for " << recPersona::GetNameStr( perID );
-        ref.f_statement << "<!-- HTML -->\n" << heading << line << "\n\n</pre>\n";
+        size_t pos = wxString::npos;
+        wxString rs = FindSource( line, &pos );
+        size_t pos1 = line.find( "../or" );
+        size_t pos2 = wxString::npos;
+        if( pos1 != wxString::npos ) {
+            pos1 += 6;
+            pos2 = line.find( ".jpg", pos1 );
+            if( pos2 != wxString::npos ) {
+                Media m;
+                m.ref = refID;
+                m.filename = line.substr( pos1, pos2 - pos1 + 4 );
+                m.text = line.substr( pos1, pos2 - pos1 );
+                media.push_back( m );
+            }
+            pos2 = line.find( "</span>", pos1 ) + 7;
+            while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+                pos2++;
+            }
+            line = line.substr( 0, pos1 - 22 ) + line.substr( pos2 );
+        }
+        else if( pos != wxString::npos ) {
+            pos2 = pos + 3;
+            while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+                pos2++;
+            }
+            line = line.substr( 0, pos ) + line.substr( pos2 );
+        }
+
+        pos1 = line.find( "../ps" );
+        wxASSERT( pos1 != wxString::npos );
+        pos2 = line.find( "</a>", pos1 ) + 4;
+        while( line.length() > pos2 && line.at( pos2 ) == ' ' ) {
+            pos2++;
+        }
+        line = line.substr( 0, pos1 - 9 ) + line.substr( pos2 );
+
+        pos1 = line.find( "../rd" );
+        if( pos1 != wxString::npos ) {
+            idt noteRefID;
+            line.Mid( pos1 + 10, 5 ).ToLongLong( &noteRefID );
+            wxString str = "R" + recGetStr( noteRefID );
+            wxString refStr = MakeIntoLink( str, RT_Reference, noteRefID );
+            pos2 = line.find( "</a>", pos1 );
+            line = line.substr( 0, pos1 - 9 ) + refStr + line.substr( pos2 + 4 );
+        }
+
+        line.Trim();
+        wxString title, statement;
+        title << year << " GRO Death Index for " << recPersona::GetNameStr( perID );
+        statement
+            << "<!-- HTML -->\n" << heading
+            << MakeIntoLink( line.substr( 0, 8 ), RT_Date, rDateID )
+            << MakeIntoLink( line.substr( 8, 12 ), RT_Individual, indID )
+            << line.substr( 21, 26 ) // Forename
+            << MakeIntoLink( placeStr, RT_Place, placeID )
+            << line.substr( 48 + c163[block].distL )
+            << rs
+            << "\n\n</pre>\n"
+            ;
+        ref.FSetTitle( title );
+        ref.FSetStatement( statement );
         ref.Save();
     }
 }
@@ -984,7 +1048,7 @@ void ProcessCustomFile( wxFileName& fn, MediaVec& media )
         Process162File( fn, media );
         break;
     case 163:
-        Process163File( fn );
+        Process163File( fn, media );
         break;
     case 1051:
         Process1051File( fn );
