@@ -51,6 +51,7 @@ extern bool DecodeHref( const wxString& href, idt* indID, wxString* indIdStr );
 extern wxString CreateCommaList( wxString& first, wxString& second );
 extern bool CreateMediaFile(
     AssFileMap& assMap, const wxString& name, const wxString& dbfile, const wxString& comment );
+extern void ScanIndividuals();
 
 /* fiCommon.cpp */
 

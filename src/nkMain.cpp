@@ -198,6 +198,8 @@ int main( int argc, char** argv )
     if ( !refFolder.empty() ) {
         wxPrintf( " Done.\nInput Ref Doc Files " );
         InputRefFiles( refFolder, media );
+        wxPrintf( " Done.\nUpdate Reference Notes " );
+        ScanIndividuals();
     }
     if ( !imgFolder.empty() ) {
         wxPrintf( " Done.\nInput Image Files " );
@@ -211,8 +213,11 @@ int main( int argc, char** argv )
 #else
 //    Filenames customs;
 //    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
-    wxFileName fn( "../../Family/web/rd01/rd00163.htm" );
-    ProcessCustomFile( fn, media );
+
+//    wxFileName fn( "../../Family/web/rd01/rd00163.htm" );
+//    ProcessCustomFile( fn, media );
+
+    ScanIndividuals();
 #endif
 
     recDb::Commit();
@@ -300,6 +305,58 @@ bool CreateMediaFile(
 
     assMap[name] = ass.FGetID();
     return true;
+}
+
+
+wxString MakeIndividualLink( idt indID )
+{
+    wxString name = recIndividual::GetNameStr( indID );
+    if( name.empty() ) {
+        return wxString();
+    }
+    wxString indIdStr = recIndividual::GetIdStr( indID );
+    wxString link;
+    link
+        << "<b><a href = 'tfp:" << indIdStr << "'>"
+        << name << "</a> [" << indIdStr << "]<b>"
+        ;
+    return link;
+}
+
+void ScanIndividuals()
+{
+    recIdVec indIDs = recIndividual::GetIdVec();
+    for( idt r = 1; r < 54; r++ ) {
+        recReference ref( r );
+        if( ref.FGetID() == 0 ) {
+            ref.FSetID( r );
+        }
+        wxString refSig = "[R" + recGetStr( r ) + "]";
+        size_t refSigSize = refSig.size();
+        bool found = false;
+        wxString statement = ref.FGetStatement();
+        for( auto indID : indIDs ) {
+            recIndividual ind( indID );
+            wxString notes = ind.FGetNote().ToStdString();
+            size_t pos = notes.find( refSig );
+            if( pos != wxString::npos ) {
+                size_t pos1 = notes.rfind( "\n", pos );
+                if( pos1 == wxString::npos ) {
+                    pos1 = 0;
+                }
+                pos = notes.find( "[R", pos + 2 );
+                size_t pos2 = notes.rfind( "\n", pos - 2 );
+                wxString extract = notes.substr( pos1, pos2 - pos1 ) + "\n\n";
+                statement += MakeIndividualLink( indID ) + "\n";
+                statement += extract;
+                found = true;
+            }
+        }
+        if( found ) {
+            ref.FSetStatement( statement );
+            ref.Save();
+        }
+    }
 }
 
 // End of nkMain.cpp file 
