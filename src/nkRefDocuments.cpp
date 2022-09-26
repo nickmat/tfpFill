@@ -658,6 +658,7 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
         return INTREF_Custom;
     }
     wxString refFormat = refNode->GetAttribute( "id" );
+    idt higher_refID = 0;
 
     if ( classAt == "property" ) {
         DoCreateElements( refNode, refID );
@@ -668,20 +669,28 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
         title.ToLong( &year );
         if( year == 1841 ) {
             CreateUkCensus( refID, g_1841CensusDateID, refNode, title );
+            higher_refID = -1;
         } else if( year == 1851 ) {
             CreateUkCensus( refID, g_1851CensusDateID, refNode, title );
+            higher_refID = -2;
         } else if( year == 1861 ) {
             CreateUkCensus( refID, g_1861CensusDateID, refNode, title );
+            higher_refID = -3;
         } else if( year == 1871 ) {
             CreateUkCensus( refID, g_1871CensusDateID, refNode, title );
+            higher_refID = -4;
         } else if( year == 1881 ) {
             CreateUkCensus( refID, g_1881CensusDateID, refNode, title );
+            higher_refID = -5;
         } else if( year == 1891 ) {
             CreateUkCensus( refID, g_1891CensusDateID, refNode, title );
+            higher_refID = -6;
         } else if( year == 1901 ) {
             Create1901UkCensus( refID, refNode, title );
+            higher_refID = -7;
         } else if( year == 1911 ) {
             CreateUkCensus( refID, g_1911CensusDateID, refNode, title );
+            higher_refID = -8;
         }
     } else {
         DoCreateElements( refNode, refID );
@@ -690,6 +699,7 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
     wxString refStr = "<!-- HTML -->\n" + xmlGetSource( refNode );
     recReference ref(0);
     ref.FSetID( refID );
+    ref.FSetHigherID( higher_refID );
     ref.FSetTitle( title );
     ref.FSetStatement( refStr );
     ref.FSetResID( 1 );
@@ -798,7 +808,9 @@ bool InputRefFiles( const wxString& refFolder, MediaVec& media )
         cont = rddir.GetFirst( &rdfilename, "rd?????.htm", wxDIR_FILES );
         while( cont ) {
             idt refID = recGetID( rdfilename.substr( 2 ) );
-//            wxPrintf( "File: %s\n", rdfilename );
+//            if( refID < 10 ) {
+//                wxPrintf( "File: %s\n", rdfilename );
+//            }
             wxString path = refFolder + "/" + rddirname + "/" + rdfilename;
             ProcessRefFile( path, refID, customs, media );
             cont = rddir.GetNext( &rdfilename );

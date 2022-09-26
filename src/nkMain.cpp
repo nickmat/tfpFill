@@ -318,7 +318,7 @@ wxString MakeIndividualLink( idt indID )
     wxString link;
     link
         << "<b><a href = 'tfp:" << indIdStr << "'>"
-        << name << "</a> [" << indIdStr << "]<b>"
+        << name << "</a> [" << indIdStr << "]</b>"
         ;
     return link;
 }
@@ -326,7 +326,7 @@ wxString MakeIndividualLink( idt indID )
 void ScanIndividuals()
 {
     recIdVec indIDs = recIndividual::GetIdVec();
-    for( idt r = 1; r < 54; r++ ) {
+    for( idt r = 9; r < 54; r++ ) {
         recReference ref( r );
         if( ref.FGetID() == 0 ) {
             ref.FSetID( r );
@@ -334,7 +334,7 @@ void ScanIndividuals()
         wxString refSig = "[R" + recGetStr( r ) + "]";
         size_t refSigSize = refSig.size();
         bool found = false;
-        wxString statement = ref.FGetStatement();
+        wxString statement = ref.FGetStatement() + "<pre>";
         for( auto indID : indIDs ) {
             recIndividual ind( indID );
             wxString notes = ind.FGetNote().ToStdString();
@@ -353,7 +353,7 @@ void ScanIndividuals()
             }
         }
         if( found ) {
-            ref.FSetStatement( statement );
+            ref.FSetStatement( statement + "</pre>\n");
             ref.Save();
         }
     }
