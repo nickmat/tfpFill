@@ -32,6 +32,25 @@
 
 #include <rec/recDb.h>
 
+enum recEntity {
+    recENT_NULL,
+    recENT_Individual,
+    recENT_Family,
+    recENT_Event,
+    recENT_Role,
+    recENT_Date,
+    recENT_Place,
+    recENT_Name,
+    recENT_Reference,
+    recENT_Persona,
+    recENT_Eventa,
+    recENT_Media,
+    recENT_Gallery,
+    recENT_Citation,
+    recENT_MAX
+};
+
+
 class wxXmlNode;
 typedef std::vector< wxFileName > Filenames;
 
@@ -73,7 +92,8 @@ extern void ProcessCustomFile( wxFileName& fn, MediaVec& media );
 extern bool ExportGedcom( const wxString& path );
 extern idt CreateDate( const wxString& date, idt refID, int* pseq = nullptr );
 extern idt CreateDateFromAge( long age, idt baseID, idt refID, int* pseq = nullptr );
-extern idt CreatePlace( const wxString& address, idt refID, int* pseq = NULL );
+extern idt CreatePlace( const wxString& address, idt refID, int* pseq = nullptr );
+extern idt CreateCitation( const wxString& citation, idt higher_citID, idt refID );
 extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID );
 extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex = Sex::unstated, int* pseq = nullptr, const wxString& note = "" );
 extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex = Sex::unstated );
