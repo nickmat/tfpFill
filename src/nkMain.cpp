@@ -326,7 +326,7 @@ wxString MakeIndividualLink( idt indID )
 void ScanIndividuals()
 {
     recIdVec indIDs = recIndividual::GetIdVec();
-    for( idt r = 9; r < 54; r++ ) {
+    for( idt r = 13; r < 54; r++ ) {
         recReference ref( r );
         if( ref.FGetID() == 0 ) {
             ref.FSetID( r );
