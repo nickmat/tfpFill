@@ -110,6 +110,53 @@ idt CreatePlace( const wxString& address, idt refID, int* pseq )
     return p.f_id;
 }
 
+idt CreateCitationPart(
+    const wxString& citation, const wxString& partStr, idt cptID, idt citID )
+{
+    size_t pos1 = citation.find( partStr );
+    if( pos1 == wxString::npos ) {
+        return 0;
+    }
+    size_t pos2 = citation.find( '\n', pos1 );
+    pos1 += partStr.length();
+    size_t len = wxString::npos;
+    if( pos2 != wxString::npos ) {
+        len = pos2 - pos1;
+    }
+    wxString str = citation.substr( pos1, len );
+    if( str.empty() ) {
+        return 0;
+    }
+    recCitationPart cp( 0 );
+    cp.FSetCitID( citID );
+    cp.FSetTypeID( cptID );
+    cp.FSetValue( str );
+    int seq = cp.GetNextCitationSeq( citID );
+    cp.FSetCitSeq( seq );
+    cp.Save();
+    return cp.FGetID();
+}
+
+idt CreateCitation( const wxString& citation, idt higher_citID, idt refID )
+{
+    if( citation.empty() || higher_citID == 0 ) return 0;
+    recCitation cit( 0 );
+    cit.FSetHigherID( higher_citID );
+    cit.FSetRefID( refID );
+    int seq = cit.GetNextRefSequence( refID );
+    cit.FSetRefSeq( seq );
+    cit.CreateUidChanged();
+    cit.Save();
+    idt citID = cit.FGetID();
+
+    CreateCitationPart( citation, "Piece: ", -5, citID );
+    CreateCitationPart( citation, "Folio: ", -7, citID );
+    CreateCitationPart( citation, "Page: ", -8, citID );
+//    CreateCitationPart( citation, "Schedule: ", -13, citID );
+
+    return citID;
+}
+
 idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID )
 {
     recEventa ev(0);

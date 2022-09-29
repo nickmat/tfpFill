@@ -331,6 +331,9 @@ wxString xmlCreateHref( recEntity entity, idt id )
     case recENT_Place:
         href = "tfpi:P";
         break;
+    case recENT_Citation:
+        href = "tfpi:Ci";
+        break;
     default:
         return href;
     }

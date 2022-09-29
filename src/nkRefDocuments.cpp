@@ -88,27 +88,28 @@ void DoCreateElements( wxXmlNode* node, idt  refID )
     CreateElements( node, refID, elements );
 }
 
-idt g_researcherID;
-idt g_1841CensusDateID;
-idt g_1851CensusDateID;
-idt g_1861CensusDateID;
-idt g_1871CensusDateID;
-idt g_1881CensusDateID;
-idt g_1891CensusDateID;
-idt g_1901CensusDateID;
-idt g_1911CensusDateID;
+idt g_researcherID = 1;
+
+idt g_1841CensusDateID = -1;
+idt g_1851CensusDateID = -2;
+idt g_1861CensusDateID = -3;
+idt g_1871CensusDateID = -4;
+idt g_1881CensusDateID = -5;
+idt g_1891CensusDateID = -6;
+idt g_1901CensusDateID = -7;
+idt g_1911CensusDateID = -8;
+
+idt g_1841CitationID = -1;
+idt g_1851CitationID = -2;
+idt g_1861CitationID = -3;
+idt g_1871CitationID = -4;
+idt g_1881CitationID = -5;
+idt g_1891CitationID = -6;
+idt g_1901CitationID = -7;
+idt g_1911CitationID = -8;
 
 void CreateSourceGlobals()
 {
-    g_researcherID = 1;
-    g_1841CensusDateID = -1; // recDate::Create( "6 Jun 1841" );
-    g_1851CensusDateID = -2; // recDate::Create( "31 Mar 1851" );
-    g_1861CensusDateID = -3; // recDate::Create( "8 Apr 1861" );
-    g_1871CensusDateID = -4; // recDate::Create( "3 Apr 1871" );
-    g_1881CensusDateID = -5; // recDate::Create( "4 Apr 1881" );
-    g_1891CensusDateID = -6; // recDate::Create( "6 Apr 1891" );
-    g_1901CensusDateID = -7; // recDate::Create( "1 Apr 1901" );
-    g_1911CensusDateID = -8; // recDate::Create( "3 Apr 1911" );
 }
 
 void ListIndividuals( wxXmlNode* node, recIdVec& list, wxArrayString& names )
@@ -219,6 +220,34 @@ wxString GetCensusAddress( wxXmlNode* table, wxXmlNode** link )
     data = xmlGetNext( data, "td" );
     part = xmlGetAllContent( data );  // "Administrative County"
     return CreateCommaList( address, part );
+}
+
+wxString GetCensusCitation( wxXmlNode* table, wxXmlNode** link )
+{
+    wxString str;
+    wxXmlNode* row = xmlGetFirstChild( table, "tr" );
+    wxXmlNode* data = xmlGetFirstChild( row, "td" );
+    while( data ) {
+        data = xmlGetNext( data, "td" );
+        if( xmlGetAllContent( data ) == "Source:" ) {
+            data = xmlGetNext( data, "td" );
+            str = xmlGetAllContent( data );
+            data = xmlGetFirstChild( data, "scan" );
+            if( xmlGetAllContent( data ) == "PRO Ref:" ) {
+                *link = data;
+            }
+            else {
+                data = xmlGetNext( data, "scan" );
+                if( xmlGetAllContent( data ) == "PRO Ref:" ) {
+                    *link = data;
+                }
+            }
+            break;
+        }
+        row = xmlGetNext( row, "tr" );
+        data = xmlGetFirstChild( row, "td" );
+    }
+    return str;
 }
 
 void Process1841CensusIndividuals(
@@ -456,13 +485,16 @@ void Create1901UkCensus( idt refID, wxXmlNode* refNode, const wxString& title )
     ProcessCensusIndividuals( row, refID, eventID, g_1901CensusDateID, placeID );
 }
 
-void CreateUkCensus( idt refID, idt dateID, wxXmlNode* refNode, const wxString& title )
+void CreateUkCensus( 
+    idt refID, idt dateID, idt citID, wxXmlNode* refNode, const wxString& title )
 {
     int refSeq_ = 0;
     wxXmlNode* row;
     wxXmlNode* table = xmlGetFirstChild( refNode, "table" );
     wxXmlNode* addrLink = nullptr;
+    wxXmlNode* citLink = nullptr;
     wxString address = GetCensusAddress( table, &addrLink );
+    wxString citation = GetCensusCitation( table, &citLink );
     // Get to first person
     table = xmlGetNext( table, "table" );
     row = xmlGetFirstChild( table, "tr" );
@@ -472,6 +504,10 @@ void CreateUkCensus( idt refID, idt dateID, wxXmlNode* refNode, const wxString& 
     idt placeID = CreatePlace( address, refID );
     if ( addrLink ) {
         xmlCreateLink( addrLink, recENT_Place, placeID );
+    }
+    idt full_citID = CreateCitation( citation, citID, refID );
+    if( full_citID != 0 ) {
+        xmlCreateLink( citLink, recENT_Citation, full_citID );
     }
     idt eventID = CreateCensusEvent( title, dateID, placeID, refID );
     if( dateID == g_1841CensusDateID ) {
@@ -668,28 +704,28 @@ IntRefReturn InterpretRef( idt refID, const wxString& classAt, const wxString& t
         long year;
         title.ToLong( &year );
         if( year == 1841 ) {
-            CreateUkCensus( refID, g_1841CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1841CensusDateID, g_1841CitationID, refNode, title );
             higher_refID = -1;
         } else if( year == 1851 ) {
-            CreateUkCensus( refID, g_1851CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1851CensusDateID, g_1851CitationID, refNode, title );
             higher_refID = -2;
         } else if( year == 1861 ) {
-            CreateUkCensus( refID, g_1861CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1861CensusDateID, g_1861CitationID, refNode, title );
             higher_refID = -3;
         } else if( year == 1871 ) {
-            CreateUkCensus( refID, g_1871CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1871CensusDateID, g_1871CitationID, refNode, title );
             higher_refID = -4;
         } else if( year == 1881 ) {
-            CreateUkCensus( refID, g_1881CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1881CensusDateID, g_1881CitationID, refNode, title );
             higher_refID = -5;
         } else if( year == 1891 ) {
-            CreateUkCensus( refID, g_1891CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1891CensusDateID, g_1891CitationID, refNode, title );
             higher_refID = -6;
         } else if( year == 1901 ) {
             Create1901UkCensus( refID, refNode, title );
             higher_refID = -7;
         } else if( year == 1911 ) {
-            CreateUkCensus( refID, g_1911CensusDateID, refNode, title );
+            CreateUkCensus( refID, g_1911CensusDateID, g_1911CitationID, refNode, title );
             higher_refID = -8;
         }
     } else {
