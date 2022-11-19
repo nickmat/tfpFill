@@ -166,12 +166,7 @@ int main( int argc, char** argv )
             return EXIT_FAILURE;
         }
     } else {
-        wxPrintf( "\nCreating database" );
-        if( recDb::CreateDbFile( outFile, recDb::DbType::full ) != recDb::CreateReturn::OK ) {
-            wxPrintf( "\nCan't create Database.\n" );
-            recUninitialize();
-            return EXIT_FAILURE;
-        }
+        wxASSERT( false ); // We must start with a existing database.
     }
 
     AssFileMap assMap;
