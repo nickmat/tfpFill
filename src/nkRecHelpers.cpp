@@ -60,6 +60,35 @@ bool ExportGedcom( const wxString& path )
     return true;
 }
 
+void UpdateOccupationEvents()
+{
+    recIdVec eveIDs = recEvent::GetTypeOfIDs( -18 );
+    for( idt eveID : eveIDs ) {
+        recEvent eve( eveID );
+        // TODO: Improve this title.
+        eve.FSetTitle( eve.FGetTitle() + " Summary" );
+        eve.Save();
+        recIndEventVec ies = eve.GetIndividualEvents();
+        if( ies.size() != 1 ) {
+            wxASSERT( true );
+            continue;
+        }
+        recEventTypeRole etr( ies[0].FGetRoleID() );
+        ies[0].FSetNote( etr.FGetName() );
+        ies[0].FSetRoleID( recEventTypeRole::ROLE_Occupation_Summary );
+        ies[0].Save();
+        if( etr.FGetID() > 0 ) {
+            etr.Delete();
+        }
+    }
+    // Tidy up loose ends.
+    recIdVec etrIDs = recEventTypeRole::IdVec( recDb::Coverage::user );
+    for( idt etrID : etrIDs ) {
+        recEventTypeRole::DeleteIfOrphaned( etrID );
+    }
+}
+
+
 idt CreateDate( const wxString& date, idt refID, int* pseq )
 {
     idt dateID = recDate::Create( date );
@@ -548,10 +577,21 @@ void AddPersonaToEventa( idt eaID, idt perID, idt roleID, const wxString& note )
     ep.Save();
 }
 
+idt ClassifyOccupation( const wxString& description )
+{
+    wxString desc = description.Lower();
+    if( desc.empty() ) return ROLE_Occupation_Dependant;
+    if( desc.find( "student" ) != wxString::npos ) return ROLE_Occupation_Student;
+    if( desc.find( "scholar" ) != wxString::npos ) return ROLE_Occupation_Student;
+    if( desc.find( "servant" ) != wxString::npos ) return ROLE_Occupation_Service;
+    if( desc.find( "labo" ) != wxString::npos ) return ROLE_Occupation_Labourer;
+    return ROLE_Occupation_Other;
+}
+
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
 {
     if( occ.empty() ) return 0;
-    idt occID = recEventTypeRole::FindOrCreate( occ, recEventType::ET_Occupation );
+    idt roleID = ClassifyOccupation( occ );
 
     recEventa ea(0);
     ea.FSetRefID( refID );
@@ -566,12 +606,47 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
     recEventaPersona ep(0);
     ep.FSetEventaID( eaID );
     ep.FSetPerID( perID );
-    ep.FSetRoleID( occID );
+    ep.FSetRoleID( roleID );
+    ep.FSetNote( occ );
     ep.FSetPerSeq( 1 );
     ep.Save();
 
-    idt eveID = LinkOrCreateEventFromEventa( eaID );
-//    assert( eveID != 0 );
+    recIdVec indIDs = recPersona::GetIndividualIDs( perID );
+    if( indIDs.size() != 1 ) {
+        return eaID;
+    }
+    idt indID = indIDs[0];
+    idt heID = recIndividual::FindEvent( indID, recEventTypeRole::Role::ROLE_Occupation_Summary );
+    if( heID == 0 ) {
+        recEvent eve( 0 );
+        eve.FSetTitle( "Occupation Summary of " + recIndividual::GetName( indID ) );
+        eve.FSetTypeID( recEventType::EType::ET_Occupation );
+        eve.Save();
+
+        heID = eve.FGetID();
+        recIndividualEvent ieve( 0 );
+        ieve.FSetIndID( indID );
+        ieve.FSetEventID( heID );
+        ieve.FSetRoleID( recEventTypeRole::Role::ROLE_Occupation_Summary );
+        ieve.Save();
+    }
+    idt eID = recEvent::CreateFromEventa( eaID );
+
+    recIndividualEvent ie( 0 );
+    ie.FSetHigherID( heID );
+    ie.FSetIndID( indID );
+    ie.FSetEventID( eID );
+    ie.FSetRoleID( roleID );
+    ie.FSetNote( occ );
+    ie.FSetIndSeq( 1 );
+    ie.Save();
+
+    recEventEventa eea( 0 );
+    eea.FSetEventID( eID );
+    eea.FSetEventaID( eaID );
+    eea.FSetConf( 0.999 );
+    eea.Save();
+
     return eaID;
 }
 

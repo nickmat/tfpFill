@@ -187,6 +187,7 @@ int main( int argc, char** argv )
     MediaVec media;
     recDb::Begin();
 #if 1
+    UpdateOccupationEvents();
     if( !CommonData.empty() ) {
         TransferCommonData( CommonData );
     }
@@ -206,13 +207,16 @@ int main( int argc, char** argv )
     }
 
 #else
+    UpdateOccupationEvents();
+
+
 //    Filenames customs;
 //    ProcessRefFile( "../web/rd01/rd00300.htm", 300, customs );
 
 //    wxFileName fn( "../../Family/web/rd01/rd00163.htm" );
 //    ProcessCustomFile( fn, media );
 
-    ScanIndividuals();
+//    ScanIndividuals();
 #endif
 
     recDb::Commit();
