@@ -88,6 +88,11 @@ void UpdateOccupationEvents()
     }
 }
 
+wxString TrimBoth( const wxString& str )
+{
+    wxString s = str;
+    return s.Trim( true ).Trim( false );
+}
 
 idt CreateDate( const wxString& date, idt refID, int* pseq )
 {
@@ -341,9 +346,10 @@ idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID )
     eventa.UpdateDatePoint();
     eventa.CreateUidChanged();
     eventa.Save();
+    idt eaID = eventa.FGetID();
 
     recEventaPersona ep(0);
-    ep.FSetEventaID( eventa.FGetID() );
+    ep.FSetEventaID( eaID );
     ep.FSetPerID( perID );
     ep.FSetRoleID( recEventTypeRole::ROLE_Birth_Born );
     ep.FSetPerSeq( 1 );
@@ -352,7 +358,8 @@ idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID )
 //    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
 //    assert( eveID != 0 );
 
-    return eventa.FGetID();
+    eventa.CreatePersonalEvent();
+    return eaID;
 }
 
 idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID )
@@ -580,18 +587,19 @@ void AddPersonaToEventa( idt eaID, idt perID, idt roleID, const wxString& note )
 idt ClassifyOccupation( const wxString& description )
 {
     wxString desc = description.Lower();
-    if( desc.empty() ) return ROLE_Occupation_Dependant;
-    if( desc.find( "student" ) != wxString::npos ) return ROLE_Occupation_Student;
-    if( desc.find( "scholar" ) != wxString::npos ) return ROLE_Occupation_Student;
-    if( desc.find( "servant" ) != wxString::npos ) return ROLE_Occupation_Service;
-    if( desc.find( "labo" ) != wxString::npos ) return ROLE_Occupation_Labourer;
-    return ROLE_Occupation_Other;
+    if( desc.empty() ) return recEventTypeRole::ROLE_Occ_Dependant;
+    if( desc.find( "student" ) != wxString::npos ) return recEventTypeRole::ROLE_Occ_Student;
+    if( desc.find( "scholar" ) != wxString::npos ) return recEventTypeRole::ROLE_Occ_Student;
+    if( desc.find( "servant" ) != wxString::npos ) return recEventTypeRole::ROLE_Occ_Service;
+    if( desc.find( "labo" ) != wxString::npos ) return recEventTypeRole::ROLE_Occ_Labourer;
+    return recEventTypeRole::ROLE_Occupation_Other;
 }
 
 idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
 {
-    if( occ.empty() ) return 0;
-    idt roleID = ClassifyOccupation( occ );
+    wxString occStr = TrimBoth( occ );
+    if( occStr.empty() ) return 0;
+    idt roleID = ClassifyOccupation( occStr );
 
     recEventa ea(0);
     ea.FSetRefID( refID );
@@ -607,10 +615,10 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
     ep.FSetEventaID( eaID );
     ep.FSetPerID( perID );
     ep.FSetRoleID( roleID );
-    ep.FSetNote( occ );
+    ep.FSetNote( occStr );
     ep.FSetPerSeq( 1 );
     ep.Save();
-
+#if 0
     recIdVec indIDs = recPersona::GetIndividualIDs( perID );
     if( indIDs.size() != 1 ) {
         return eaID;
@@ -646,7 +654,8 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
     eea.FSetEventaID( eaID );
     eea.FSetConf( 0.999 );
     eea.Save();
-
+#endif
+    recEventa::CreatePersonalEvent( eaID );
     return eaID;
 }
 

@@ -411,7 +411,6 @@ void ProcessCensusIndividuals(
                 attID = CreateOccupation( occ, refID, perID, dateID );
                 if( attID ) {
                     xmlCreateLink( span, recENT_Eventa, attID );
-                    recEventa::CreatePersonalEvent( attID );
                 }
             }
         }

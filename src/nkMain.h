@@ -50,19 +50,6 @@ enum recEntity {
     recENT_MAX
 };
 
-enum RoleType : idt {
-    ROLE_Occupation_Dependant = -91,
-    ROLE_Occupation_Student = -92,
-    ROLE_Occupation_Employed = -93,
-    ROLE_Occupation_Self_employed = -94,
-    ROLE_Occupation_Retired = -95,
-    ROLE_Occupation_Independent_means = -96,
-    ROLE_Occupation_Tradesman = -97,
-    ROLE_Occupation_Labourer = -98,
-    ROLE_Occupation_Service = -99,
-    ROLE_Occupation_Other = -100
-};
-
 class wxXmlNode;
 typedef std::vector< wxFileName > Filenames;
 
