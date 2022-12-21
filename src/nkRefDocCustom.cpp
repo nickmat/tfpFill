@@ -572,7 +572,6 @@ void Process163File( wxFileName& fn, MediaVec& media )
         }
         dDateID = CreateDate( str, refID, &seq );
         dEveID = CreateDeathEventa( refID, perID, dDateID, placeID );
-        LinkOrCreateEventFromEventa( dEveID );
 
         if( block == 0 ) {  // This block may state age
             str = line.Mid( 44, 2 );

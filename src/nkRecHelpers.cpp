@@ -453,8 +453,7 @@ idt CreateDeathEventa( idt refID, idt perID, idt dateID, idt placeID )
     ep.f_per_seq = 1;
     ep.Save();
 
-//    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
-//    assert( eveID != 0 );
+    eventa.CreatePersonalEvent();
     return eventa.f_id;
 }
 
@@ -477,8 +476,6 @@ idt CreateRegDeathEvent( idt refID, idt perID, idt dateID, idt placeID )
     ep.f_per_seq = 1;
     ep.Save();
 
-    idt eveID = LinkOrCreateEventFromEventa( eventa.FGetID() );
-//    assert( eveID != 0 );
     return eventa.f_id;
 }
 
@@ -618,43 +615,7 @@ idt CreateOccupation( const wxString& occ, idt refID, idt perID, idt dateID )
     ep.FSetNote( occStr );
     ep.FSetPerSeq( 1 );
     ep.Save();
-#if 0
-    recIdVec indIDs = recPersona::GetIndividualIDs( perID );
-    if( indIDs.size() != 1 ) {
-        return eaID;
-    }
-    idt indID = indIDs[0];
-    idt heID = recIndividual::FindEvent( indID, recEventTypeRole::Role::ROLE_Occupation_Summary );
-    if( heID == 0 ) {
-        recEvent eve( 0 );
-        eve.FSetTitle( "Occupation Summary of " + recIndividual::GetName( indID ) );
-        eve.FSetTypeID( recEventType::EType::ET_Occupation );
-        eve.Save();
 
-        heID = eve.FGetID();
-        recIndividualEvent ieve( 0 );
-        ieve.FSetIndID( indID );
-        ieve.FSetEventID( heID );
-        ieve.FSetRoleID( recEventTypeRole::Role::ROLE_Occupation_Summary );
-        ieve.Save();
-    }
-    idt eID = recEvent::CreateFromEventa( eaID );
-
-    recIndividualEvent ie( 0 );
-    ie.FSetHigherID( heID );
-    ie.FSetIndID( indID );
-    ie.FSetEventID( eID );
-    ie.FSetRoleID( roleID );
-    ie.FSetNote( occ );
-    ie.FSetIndSeq( 1 );
-    ie.Save();
-
-    recEventEventa eea( 0 );
-    eea.FSetEventID( eID );
-    eea.FSetEventaID( eaID );
-    eea.FSetConf( 0.999 );
-    eea.Save();
-#endif
     recEventa::CreatePersonalEvent( eaID );
     return eaID;
 }
