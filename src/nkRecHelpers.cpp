@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011 ~ 2022, Nick Matthews.
+ * Copyright:   Copyright (c) 2011..2023, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -291,10 +291,11 @@ idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex, int* 
 
     recName name(0);
     name.FSetPerID( per.FGetID() );
+    name.FSetStyleID( recNameStyle::NS_Recorded );
     name.FSetSequence( 1 );
     name.Save();
     name.AddNameParts( ProperCase( nameStr ) );
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id );
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.FGetID() );
 
     if( indID && !recIndividual::Exists( indID ) ) {
         CreateIndividual( indID, per.FGetID() );
@@ -313,10 +314,11 @@ void AddName( idt refID, idt perID, const wxString& nameStr, int* pseq )
 {
     recName name(0);
     name.FSetPerID( perID );
+    name.FSetStyleID( recNameStyle::NS_Recorded );
     name.SetNextSequence();
     name.Save();
     name.AddNameParts( ProperCase( nameStr ) );
-    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.f_id, pseq );
+    recReferenceEntity::Create( refID, recReferenceEntity::TYPE_Name, name.FGetID(), pseq);
 }
 
 void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names )

@@ -5,7 +5,7 @@
  * Author:      Nick Matthews
  * Website:     http://thefamilypack.org
  * Created:     23rd September 2011
- * Copyright:   Copyright (c) 2011..2022, Nick Matthews.
+ * Copyright:   Copyright (c) 2011..2023, Nick Matthews.
  * Licence:     GNU GPLv3
  *
  *  tfpnick is free software: you can redistribute it and/or modify
@@ -99,8 +99,8 @@ extern idt CreateCensusEvent( const wxString& title, idt dID, idt pID, idt rID )
 extern idt CreatePersona( idt refID, idt indID, const wxString& nameStr, Sex sex = Sex::unstated, int* pseq = nullptr, const wxString& note = "" );
 extern idt CreatePersona( idt refID, idt indID, idt nameID, Sex sex = Sex::unstated );
 extern idt GetWifeName( const wxString& nameStr, idt husbandNameID, idt refID, int* pseq = nullptr );
-extern idt CreateName( const wxString& name, idt style = 0 );
-extern idt CreatePerName( const wxString& name, idt perID, idt style = 0 );
+extern idt CreateName( const wxString& name, idt style = -6 );
+extern idt CreatePerName( const wxString& name, idt perID, idt style = -6 );
 extern void AddPersonas( idt refID, recIdVec& indList, wxArrayString& names );
 extern idt CreateBirthEvent( idt refID, idt perID, idt dateID, idt placeID );
 extern idt CreateRegBirthEvent( idt refID, idt perID, idt dateID, idt placeID );
